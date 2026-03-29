@@ -2,6 +2,8 @@
 
 **NeurAmpli** is a minimal yet extremely powerful virtual guitar amplifier (Amp Simulator) written natively in VB.NET. By pushing the **NAudio** architecture to its limits, it transforms a dry input signal from your audio interface into a compact, saturated, and musically rich even-harmonic tube tone with near-zero latency.
 
+<img width="623" height="365" alt="Screenshot 2026-03-29 215435" src="https://github.com/user-attachments/assets/d2f5c29f-c7b3-4ba6-b004-f150549a3a47" />
+
 ## 🌟 Key Features & Strengths
 
 - **⚡ Zero-Latency WASAPI Exclusive:** Completely bypasses the Windows native mixer. `WasapiOut` running in Exclusive Mode allows for microscopic output buffers (down to 10ms), guaranteeing maximum real-time responsiveness under your fingertips while playing.
@@ -22,7 +24,7 @@
 
 ## 🚀 Quick Start / Usage
 1. Select the hardware input receiving your guitar from the dropdown menu.
-2. Click **Start** (Boots with a `Clean` tone preset).
+2. Click **ON** (Boots with a `Clean` tone preset).
 3. Feel free to tweak the Gain, EQ, or play with the built-in Presets (`Crunch`, `Metal`) in real-time!
 
 ## 🛠️ Built With
