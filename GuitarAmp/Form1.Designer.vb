@@ -33,19 +33,19 @@ Partial Class Form1
         Me.ToolStripContainer1 = New System.Windows.Forms.ToolStripContainer()
         Me.Label3 = New System.Windows.Forms.Label()
         Me.Timer1 = New System.Windows.Forms.Timer(Me.components)
-        Me.swComp = New Global.NeurAmpli.RockSwitch()
-        Me.swChorus = New Global.NeurAmpli.RockSwitch()
-        Me.knobGate = New Global.NeurAmpli.RockKnob()
-        Me.swDelay = New Global.NeurAmpli.RockSwitch()
-        Me.knobDrive = New Global.NeurAmpli.RockKnob()
-        Me.swTremolo = New Global.NeurAmpli.RockSwitch()
-        Me.swReverb = New Global.NeurAmpli.RockSwitch()
-        Me.knobBass = New Global.NeurAmpli.RockKnob()
-        Me.knobMid = New Global.NeurAmpli.RockKnob()
-        Me.knobTreble = New Global.NeurAmpli.RockKnob()
-        Me.knobVol = New Global.NeurAmpli.RockKnob()
-        Me.swCabSim = New Global.NeurAmpli.RockSwitch()
-        Me.swExclusive = New Global.NeurAmpli.RockSwitch()
+        Me.swComp = New NeurAmpli.RockSwitch()
+        Me.swChorus = New NeurAmpli.RockSwitch()
+        Me.knobGate = New NeurAmpli.RockKnob()
+        Me.swDelay = New NeurAmpli.RockSwitch()
+        Me.knobDrive = New NeurAmpli.RockKnob()
+        Me.swTremolo = New NeurAmpli.RockSwitch()
+        Me.swReverb = New NeurAmpli.RockSwitch()
+        Me.knobBass = New NeurAmpli.RockKnob()
+        Me.knobMid = New NeurAmpli.RockKnob()
+        Me.knobTreble = New NeurAmpli.RockKnob()
+        Me.knobVol = New NeurAmpli.RockKnob()
+        Me.swCabSim = New NeurAmpli.RockSwitch()
+        Me.swExclusive = New NeurAmpli.RockSwitch()
         CType(Me.picVuMeter, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.pnlMain.SuspendLayout()
         Me.ToolStripContainer1.ContentPanel.SuspendLayout()
@@ -144,9 +144,9 @@ Partial Class Form1
         Me.Label2.ForeColor = System.Drawing.Color.Orange
         Me.Label2.Location = New System.Drawing.Point(205, 7)
         Me.Label2.Name = "Label2"
-        Me.Label2.Size = New System.Drawing.Size(57, 21)
+        Me.Label2.Size = New System.Drawing.Size(58, 21)
         Me.Label2.TabIndex = 10
-        Me.Label2.Text = "v2.3.9"
+        Me.Label2.Text = "v2.4.0"
         '
         'Label1
         '

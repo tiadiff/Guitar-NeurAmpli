@@ -6,7 +6,7 @@
 
 ## 🌟 Key Features & Strengths
 
-- **⚡ Zero-Latency WASAPI Exclusive:** Completely bypasses the Windows native mixer. `WasapiOut` running in Exclusive Mode allows for microscopic output buffers (down to 10ms), guaranteeing maximum real-time responsiveness under your fingertips while playing.
+- **⚡ Dynamic WASAPI Engine (Exclusive/Shared):** A dedicated UI toggle allows you to seamlessly switch between **Exclusive Mode** (completely bypassing the Windows native mixer for microscopic 10ms output buffers and maximum real-time responsiveness) and **Shared Mode** (perfect for practicing over YouTube backing tracks or Spotify with ~15ms latency). The stream gracefully auto-restarts upon switching without breaking the UI.
 - **📈 192kHz Implicit Oversampling:** Internal DSP engine tested to run natively at `192,000Hz`. Operating at this extreme frequency not only offers crystalline precision but naturally prevents catastrophic digital aliasing ("fizz") when generating extreme high-gain distortion.
 - **🔥 Asymmetric Tube Simulation:** The distortion (Drive) stage does not rely on artificial symmetric clipping. A **Parametric DC Tube Bias offset** is applied within the `Math.Tanh` transfer function. The resulting asymmetrical wave deformation generates abundant and highly musical *even-order harmonics*, perfectly emulating the color and warmth of true thermionic vacuum tubes (like an overdriven 12AX7).
 - **🔊 Multi-Stage Cabinet Simulator:** Instead of a basic low-pass filter, the Cab Sim algorithm mimics the acoustic mass and air movement of a large 4x12 Studio Cabinet using cascaded `BiQuadFilter` instances:
