@@ -2,6 +2,7 @@ Imports NAudio.Wave
 Imports NAudio.CoreAudioApi
 Imports NAudio.Dsp
 Imports System.Drawing
+Imports System.Drawing.Drawing2D
 
 Public Class Form1
     Private audioInput As WaveInEvent
@@ -87,14 +88,14 @@ Public Class Form1
         If Not isRecording Then
             guitarEffect.StartRecording("Rec.wav")
             isRecording = True
-            btnRec.BackColor = Color.Red
+            btnRec.BackColor = Color.FromArgb(80, 15, 20)
             recSeconds = 0
             Timer1.Interval = 1000
             Timer1.Start()
         Else
             guitarEffect.StopRecording()
             isRecording = False
-            btnRec.BackColor = Color.Orange
+            btnRec.BackColor = Color.FromArgb(80, 40, 10)
             Timer1.Stop()
         End If
     End Sub
@@ -184,13 +185,59 @@ Public Class Form1
 
     Private Sub picVuMeter_Paint(sender As Object, e As PaintEventArgs) Handles picVuMeter.Paint
         Dim g = e.Graphics
-        Dim width = CInt(picVuMeter.Width * currentPeakLevel)
-        g.FillRectangle(Brushes.Black, picVuMeter.ClientRectangle)
-        If width > 0 Then
-            Using b As New Drawing2D.LinearGradientBrush(New Rectangle(0, 0, width, picVuMeter.Height), Color.Lime, Color.Red, 0.0F)
-                g.FillRectangle(b, 0, 0, width, picVuMeter.Height)
+        g.SmoothingMode = SmoothingMode.AntiAlias
+        Dim w = picVuMeter.Width
+        Dim h = picVuMeter.Height
+
+        ' Dark background with subtle inner shadow
+        g.FillRectangle(New SolidBrush(Color.FromArgb(12, 12, 15)), picVuMeter.ClientRectangle)
+        Using pen As New Pen(Color.FromArgb(30, 30, 36), 1.0F)
+            g.DrawRectangle(pen, 0, 0, w - 1, h - 1)
+        End Using
+
+        ' Segmented bars
+        Dim totalBars = 60
+        Dim barWidth = (w - 8) / totalBars
+        Dim barGap = 2
+        Dim filledBars = CInt(totalBars * currentPeakLevel)
+
+        For i = 0 To filledBars - 1
+            Dim percent = CSng(i) / totalBars
+            Dim barColor As Color
+            If percent < 0.55 Then
+                barColor = Color.FromArgb(46, 213, 115)   ' Green
+            ElseIf percent < 0.8 Then
+                barColor = Color.FromArgb(255, 200, 50)   ' Yellow
+            Else
+                barColor = Color.FromArgb(255, 71, 87)    ' Red
+            End If
+
+            Dim x = 4 + CInt(i * barWidth)
+            Dim bw = CInt(barWidth) - barGap
+            If bw < 1 Then bw = 1
+
+            ' Glow behind bar
+            Using brush As New SolidBrush(Color.FromArgb(25, barColor))
+                g.FillRectangle(brush, x - 1, 1, bw + 2, h - 2)
             End Using
-        End If
+
+            ' Bar itself
+            Using brush As New LinearGradientBrush(New Rectangle(x, 3, bw, h - 6),
+                Color.FromArgb(Math.Min(barColor.R + 30, 255), Math.Min(barColor.G + 30, 255), Math.Min(barColor.B + 30, 255)),
+                barColor, 90.0F)
+                g.FillRectangle(brush, x, 4, bw, h - 8)
+            End Using
+        Next
+
+        ' Draw dim bars for empty slots
+        For i = filledBars To totalBars - 1
+            Dim x = 4 + CInt(i * barWidth)
+            Dim bw = CInt(barWidth) - barGap
+            If bw < 1 Then bw = 1
+            Using brush As New SolidBrush(Color.FromArgb(20, 20, 24))
+                g.FillRectangle(brush, x, 4, bw, h - 8)
+            End Using
+        Next
     End Sub
 
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
