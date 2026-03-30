@@ -2,7 +2,7 @@
 
 **NeurAmpli** is a minimal yet extremely powerful virtual guitar amplifier (Amp Simulator) written natively in VB.NET. By pushing the **NAudio** architecture to its limits, it transforms a dry input signal from your audio interface into a compact, saturated, and musically rich even-harmonic tube tone with near-zero latency.
 
-<img width="623" height="365" alt="Screenshot 2026-03-29 215435" src="https://github.com/user-attachments/assets/d2f5c29f-c7b3-4ba6-b004-f150549a3a47" />
+<img width="623" height="365" alt="image" src="https://github.com/user-attachments/assets/b9867b47-847b-4504-85e7-3383f8d0969b" />
 
 ## 🌟 Key Features & Strengths
 
