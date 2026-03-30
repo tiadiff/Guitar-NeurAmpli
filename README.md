@@ -2,7 +2,13 @@
 
 **NeurAmpli** is a minimal & powerful virtual guitar amplifier (Amp Simulator) written natively in VB.NET. By pushing the **NAudio** architecture to its limits, it transforms a dry input signal from your audio interface into a compact, saturated, and musically rich even-harmonic tube tone with near-zero latency.
 
-<img width="623" height="365" alt="image" src="https://github.com/user-attachments/assets/69d86109-1821-44a5-89d3-1801d968b8c1" />
+### v2.5.0 (Rack Update)
+The entire DSP suite and User Interface have been completely overhauled. 
+- Introduces the **Dynamic FX Tweaker Rack**, a smart side-panel that reveals granular DSP controls (Chorus Rate/Depth, Delay Feedback/Mix, Comp Ratio/Threshold) when clicking an effect's name.
+- Custom vector-rendered Flat/Neumorphic Glass Panels and Knobs.
+- A **Safety Master Soft-Clipper** (Math.Tanh) ensures extreme signal chains never cause digital aliasing or Wasapi hard-clipping.
+
+<img width="918" height="365" alt="Screenshot 2026-03-31 011236" src="https://github.com/user-attachments/assets/129d1307-3181-4da9-9726-18bce0caee89" />
 
 ## 🌟 Key Features & Strengths
 
@@ -16,13 +22,13 @@
   - An **80Hz Butterworth High-Pass** entirely rolls off muddy sub-frequencies, freeing up headroom and tightening the low-end.
   - A **4.5kHz Double Low-Pass cascade** (Linkwitz-Riley 24dB/oct style) surgically slices off harsh digital high-end fizz, perfectly modeling the upper resonance of thick wood and speaker cones (e.g., Celestion V30).
     
-- **🎛️ Comprehensive DSP FX Chain:**
-  - Soft-Knee Noise Gate.
-  - Dynamic VCA Compressor with Envelope Tracking.
-  - Linearly Interpolated LFO Modulated Delay-Chorus.
-  - Dark Analog Tape Delay.
-  - 4-Tap Prime Number Diffusion Reverb (for smooth tails free of ghost resonances).
-  - LFO Tremolo.
+- **🎛️ Comprehensive DSP FX Chain (With Dynamic Tweaker Rack):**
+  - **Soft-Knee Noise Gate** (Exponential dial curve slicing out perfectly at `-80dB`).
+  - **Dynamic VCA Compressor** with Envelope Tracking (Adjustable `Ratio` and `Threshold`).
+  - **LFO Modulated Chorus** (Adjustable `Rate` and `Depth`).
+  - **Dark Analog Tape Delay** (Adjustable `Time`, `Feedback`, and `Mix`).
+  - **4-Tap Prime Number Diffusion Reverb** (Adjustable `Decay` and `Mix`).
+  - **LFO Tremolo** (Adjustable `Rate` and `Depth`).
     
 - **💾 Thread-Safe WAV Recording:** A dedicated button allows for surgical high-resolution recording (wet loop) by asynchronously dumping massive buffer *chunks* in the background. It utilizes strict `SyncLock` synchronization to guarantee thread-safe stability without audio dropouts or memory leaks.
   
