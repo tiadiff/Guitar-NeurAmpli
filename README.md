@@ -1,4 +1,4 @@
-# 🎸 NeurAmpli: Advanced VB.NET DSP Amplifier
+# 🎸 NeurAmpli: Guitar DSP Amplifier
 
 **NeurAmpli** is a minimal yet extremely powerful virtual guitar amplifier (Amp Simulator) written natively in VB.NET. By pushing the **NAudio** architecture to its limits, it transforms a dry input signal from your audio interface into a compact, saturated, and musically rich even-harmonic tube tone with near-zero latency.
 
