@@ -60,8 +60,10 @@ Public Class Form1
             guitarEffect = New GuitarAmpEffect(bufferedProvider.ToSampleProvider())
             ApplySettings()
 
-            ' WASAPI Esclusivo a 10ms per stabilità
-            audioOutput = New WasapiOut(AudioClientShareMode.Exclusive, 10)
+            ' Scelta tra WASAPI Esclusivo (latenza 10ms) e Condiviso (15ms, permette audio app)
+            Dim shareMode = If(swExclusive.Checked, AudioClientShareMode.Exclusive, AudioClientShareMode.Shared)
+            Dim latencyMode = If(swExclusive.Checked, 10, 15)
+            audioOutput = New WasapiOut(shareMode, latencyMode)
             audioOutput.Init(guitarEffect)
             audioInput.StartRecording()
             audioOutput.Play()
@@ -127,6 +129,14 @@ Public Class Form1
 
         If Not isUpdatingPreset Then
             ApplySettings()
+        End If
+    End Sub
+
+    Private Sub swExclusive_CheckedChanged(sender As Object, e As EventArgs) Handles swExclusive.CheckedChanged
+        ' Se cambia modalità a runtime, riavviamo l'audio in automatico
+        If audioOutput IsNot Nothing AndAlso btnStop.Enabled Then
+            btnStop.PerformClick()
+            btnStart.PerformClick()
         End If
     End Sub
 

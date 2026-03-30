@@ -45,6 +45,7 @@ Partial Class Form1
         Me.knobTreble = New Global.NeurAmpli.RockKnob()
         Me.knobVol = New Global.NeurAmpli.RockKnob()
         Me.swCabSim = New Global.NeurAmpli.RockSwitch()
+        Me.swExclusive = New Global.NeurAmpli.RockSwitch()
         CType(Me.picVuMeter, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.pnlMain.SuspendLayout()
         Me.ToolStripContainer1.ContentPanel.SuspendLayout()
@@ -129,6 +130,7 @@ Partial Class Form1
         Me.pnlMain.Controls.Add(Me.swCabSim)
         Me.pnlMain.Controls.Add(Me.Label2)
         Me.pnlMain.Controls.Add(Me.Label1)
+        Me.pnlMain.Controls.Add(Me.swExclusive)
         Me.pnlMain.Location = New System.Drawing.Point(12, 12)
         Me.pnlMain.Name = "pnlMain"
         Me.pnlMain.Size = New System.Drawing.Size(597, 307)
@@ -396,6 +398,17 @@ Partial Class Form1
         Me.swCabSim.Size = New System.Drawing.Size(278, 30)
         Me.swCabSim.TabIndex = 5
         '
+        'swExclusive
+        '
+        Me.swExclusive.Checked = False
+        Me.swExclusive.CheckedColor = System.Drawing.Color.Red
+        Me.swExclusive.Cursor = System.Windows.Forms.Cursors.Hand
+        Me.swExclusive.LabelText = "EXCLUSIVE"
+        Me.swExclusive.Location = New System.Drawing.Point(307, 121)
+        Me.swExclusive.Name = "swExclusive"
+        Me.swExclusive.Size = New System.Drawing.Size(122, 30)
+        Me.swExclusive.TabIndex = 6
+        '
         'Form1
         '
         Me.BackColor = System.Drawing.Color.Tomato
@@ -442,6 +455,7 @@ Partial Class Form1
     Friend WithEvents swTremolo As Global.NeurAmpli.RockSwitch
     Friend WithEvents swReverb As Global.NeurAmpli.RockSwitch
     Friend WithEvents swCabSim As Global.NeurAmpli.RockSwitch
+    Friend WithEvents swExclusive As Global.NeurAmpli.RockSwitch
 
     Friend WithEvents btnMetal As System.Windows.Forms.Button
     Friend WithEvents btnCrunch As System.Windows.Forms.Button
