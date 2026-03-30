@@ -7,11 +7,15 @@
 ## 🌟 Key Features & Strengths
 
 - **⚡ Dynamic WASAPI Engine (Exclusive/Shared):** A dedicated UI toggle allows you to seamlessly switch between **Exclusive Mode** (completely bypassing the Windows native mixer for microscopic 10ms output buffers and maximum real-time responsiveness) and **Shared Mode** (perfect for practicing over YouTube backing tracks or Spotify with ~15ms latency). The stream gracefully auto-restarts upon switching without breaking the UI.
+  
 - **📈 192kHz Implicit Oversampling:** Internal DSP engine tested to run natively at `192,000Hz`. Operating at this extreme frequency not only offers crystalline precision but naturally prevents catastrophic digital aliasing ("fizz") when generating extreme high-gain distortion.
+  
 - **🔥 Asymmetric Tube Simulation:** The distortion (Drive) stage does not rely on artificial symmetric clipping. A **Parametric DC Tube Bias offset** is applied within the `Math.Tanh` transfer function. The resulting asymmetrical wave deformation generates abundant and highly musical *even-order harmonics*, perfectly emulating the color and warmth of true thermionic vacuum tubes (like an overdriven 12AX7).
+  
 - **🔊 Multi-Stage Cabinet Simulator:** Instead of a basic low-pass filter, the Cab Sim algorithm mimics the acoustic mass and air movement of a large 4x12 Studio Cabinet using cascaded `BiQuadFilter` instances:
   - An **80Hz Butterworth High-Pass** entirely rolls off muddy sub-frequencies, freeing up headroom and tightening the low-end.
   - A **4.5kHz Double Low-Pass cascade** (Linkwitz-Riley 24dB/oct style) surgically slices off harsh digital high-end fizz, perfectly modeling the upper resonance of thick wood and speaker cones (e.g., Celestion V30).
+    
 - **🎛️ Comprehensive DSP FX Chain:**
   - Soft-Knee Noise Gate.
   - Dynamic VCA Compressor with Envelope Tracking.
@@ -19,7 +23,9 @@
   - Dark Analog Tape Delay.
   - 4-Tap Prime Number Diffusion Reverb (for smooth tails free of ghost resonances).
   - LFO Tremolo.
+    
 - **💾 Thread-Safe WAV Recording:** A dedicated button allows for surgical high-resolution recording (wet loop) by asynchronously dumping massive buffer *chunks* in the background. It utilizes strict `SyncLock` synchronization to guarantee thread-safe stability without audio dropouts or memory leaks.
+  
 - **🎨 Fluid UI:** Integrated fast-presets, a responsive floating-point hardware-style VUMeter, and smooth borderless dragging governed directly by Windows Native calls (WM_NCLBUTTONDOWN).
 
 ## 🚀 Quick Start / Usage
