@@ -3,22 +3,28 @@ Imports System.Drawing.Drawing2D
 Imports System.Windows.Forms
 
 ' ============================================================
-' DESIGN SYSTEM - Colori e Costanti del tema
+' DESIGN SYSTEM - Colori e Costanti del tema (FLAT / MODERN)
 ' ============================================================
 Public Module ThemeColors
-    Public ReadOnly BgDeep As Color = Color.FromArgb(13, 13, 13)
-    Public ReadOnly BgPanel As Color = Color.FromArgb(26, 26, 30)
-    Public ReadOnly Surface As Color = Color.FromArgb(37, 37, 41)
-    Public ReadOnly BorderClr As Color = Color.FromArgb(58, 58, 66)
-    Public ReadOnly TextPrimary As Color = Color.FromArgb(240, 236, 229)
-    Public ReadOnly TextSecondary As Color = Color.FromArgb(138, 138, 150)
-    Public ReadOnly AccentAmber As Color = Color.FromArgb(255, 140, 0)
-    Public ReadOnly AccentCyan As Color = Color.FromArgb(0, 229, 255)
-    Public ReadOnly Danger As Color = Color.FromArgb(255, 71, 87)
-    Public ReadOnly Success As Color = Color.FromArgb(46, 213, 115)
+    Public ReadOnly BgDeep As Color = Color.FromArgb(14, 14, 16)      ' Sfondo principale ultra scuro
+    Public ReadOnly BgPanel As Color = Color.FromArgb(24, 24, 28)     ' Sfondo dei pannelli (flat)
+    Public ReadOnly Surface As Color = Color.FromArgb(36, 36, 42)     ' Superficie dei controlli
+    Public ReadOnly BorderClr As Color = Color.FromArgb(48, 48, 56)   ' Bordi leggeri
+    Public ReadOnly TextPrimary As Color = Color.FromArgb(245, 245, 250)
+    Public ReadOnly TextSecondary As Color = Color.FromArgb(130, 130, 145)
+
+    ' Colori Neon
+    Public ReadOnly AccentAmber As Color = Color.FromArgb(255, 170, 0)
+    Public ReadOnly AccentCyan As Color = Color.FromArgb(0, 240, 255)
+    Public ReadOnly Danger As Color = Color.FromArgb(255, 75, 95)
+    Public ReadOnly Success As Color = Color.FromArgb(30, 215, 96)    ' Verde digitale brillante
 
     Public Function CreateRoundedRect(rect As Rectangle, radius As Integer) As GraphicsPath
         Dim path As New GraphicsPath()
+        If radius <= 0 Then
+            path.AddRectangle(rect)
+            Return path
+        End If
         Dim d = radius * 2
         If d > rect.Height Then d = rect.Height
         If d > rect.Width Then d = rect.Width
@@ -32,7 +38,7 @@ Public Module ThemeColors
 End Module
 
 ' ============================================================
-' GLASS PANEL - Pannello con effetto Glassmorphism
+' FLAT PANEL - Pannello Base Pulito
 ' ============================================================
 Public Class GlassPanel
     Inherits Panel
@@ -44,35 +50,36 @@ Public Class GlassPanel
     End Sub
 
     Protected Overrides Sub OnPaintBackground(e As PaintEventArgs)
-        ' Suppressed - handled in OnPaint
+        ' Trasparenza apparente: disegniamo il colore del parent
+        Dim parentBg = If(Me.Parent IsNot Nothing, Me.Parent.BackColor, ThemeColors.BgDeep)
+        e.Graphics.Clear(parentBg)
     End Sub
 
     Protected Overrides Sub OnPaint(e As PaintEventArgs)
         Dim g = e.Graphics
         g.SmoothingMode = SmoothingMode.AntiAlias
 
-        Dim radius = 14
+        Dim radius = 16 ' Curve gentili
         Dim rect = New Rectangle(0, 0, Width - 1, Height - 1)
 
         Using path = ThemeColors.CreateRoundedRect(rect, radius)
-            ' Solid background to match BackColor exactly
+            ' Sfondo solido flat (rispetta il vero BackColor del controllo per blending perfetto)
             Using brush As New SolidBrush(Me.BackColor)
                 g.FillPath(brush, path)
             End Using
 
-            ' Glass border
-            Using pen As New Pen(Color.FromArgb(45, 45, 52), 1.0F)
+            ' Bordo sottile minimale
+            Using pen As New Pen(Color.FromArgb(50, 50, 60), 1.0F)
                 g.DrawPath(pen, path)
             End Using
         End Using
 
-        ' Paint children on top
         MyBase.OnPaint(e)
     End Sub
 End Class
 
 ' ============================================================
-' ROCK KNOB - Manopola Rotativa Premium
+' FLAT/NEOMURPHIC KNOB - Manopola con Neon Arc ad alto contrasto
 ' ============================================================
 Public Class RockKnob
     Inherits Control
@@ -135,8 +142,7 @@ Public Class RockKnob
     Public Event ValueChanged As EventHandler
 
     Protected Overrides Sub OnPaintBackground(e As PaintEventArgs)
-        ' Paint parent's background color for seamless look
-        Dim bgColor = If(Parent IsNot Nothing, Parent.BackColor, Color.FromArgb(22, 22, 28))
+        Dim bgColor = If(Parent IsNot Nothing, Parent.BackColor, ThemeColors.BgPanel)
         e.Graphics.Clear(bgColor)
     End Sub
 
@@ -145,117 +151,101 @@ Public Class RockKnob
         g.SmoothingMode = SmoothingMode.AntiAlias
         g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit
 
-        Dim knobSize = Width - 12
+        Dim knobSize = Width - 16
         Dim cx = Width \ 2
-        Dim cy = (knobSize \ 2) + 6
-        Dim knobRect As New Rectangle(cx - knobSize \ 2, 6, knobSize, knobSize)
+        Dim cy = (knobSize \ 2) + 8
+        Dim knobRect As New Rectangle(cx - knobSize \ 2, cy - knobSize \ 2, knobSize, knobSize)
 
-        ' === DROP SHADOW ===
-        For i = 4 To 1 Step -1
-            Dim sr = New Rectangle(knobRect.X + 1, knobRect.Y + 1 + i, knobRect.Width, knobRect.Height)
-            Using b As New SolidBrush(Color.FromArgb(12 * i, 0, 0, 0))
+        ' === SOFT OUTSIDE DROP SHADOW (Neumorphic touch) ===
+        For i = 6 To 1 Step -1
+            Dim sr = New Rectangle(knobRect.X - i + 2, knobRect.Y - i + 4, knobRect.Width + i * 2, knobRect.Height + i * 2)
+            Using b As New SolidBrush(Color.FromArgb(8 * i, 0, 0, 0))
                 g.FillEllipse(b, sr)
             End Using
         Next
 
-        ' === OUTER RING (metallic gradient) ===
-        Using path As New GraphicsPath()
-            path.AddEllipse(knobRect)
-            Using pgb As New PathGradientBrush(path)
-                pgb.CenterColor = Color.FromArgb(58, 58, 64)
-                pgb.SurroundColors = New Color() {Color.FromArgb(22, 22, 25)}
-                g.FillEllipse(pgb, knobRect)
-            End Using
+        ' === SOLID KNOB BODY ===
+        Using brush As New SolidBrush(ThemeColors.Surface)
+            g.FillEllipse(brush, knobRect)
         End Using
-        Using pen As New Pen(Color.FromArgb(72, 72, 80), 1.2F)
+        
+        ' Bordo interno sottilissimo e poco visibile per definizione
+        Using pen As New Pen(Color.FromArgb(60, 60, 68), 1.0F)
             g.DrawEllipse(pen, knobRect)
         End Using
 
-        ' === INNER CIRCLE ===
-        Dim innerSize = knobSize - 14
-        Dim innerRect = New Rectangle(cx - innerSize \ 2, cy - innerSize \ 2, innerSize, innerSize)
-        Using path As New GraphicsPath()
-            path.AddEllipse(innerRect)
-            Using pgb As New PathGradientBrush(path)
-                pgb.CenterColor = Color.FromArgb(48, 48, 54)
-                pgb.SurroundColors = New Color() {Color.FromArgb(26, 26, 30)}
-                g.FillEllipse(pgb, innerRect)
-            End Using
-        End Using
-
-        ' === VALUE ARC ===
-        Dim arcRect = New Rectangle(cx - (knobSize \ 2) + 4, 10, knobSize - 8, knobSize - 8)
+        ' === PURE NEON VALUE ARC ===
+        Dim arcRect = New Rectangle(knobRect.X + 4, knobRect.Y + 4, knobSize - 8, knobSize - 8)
         Dim startAngle As Single = 135
         Dim sweepAngle As Single = 270
         Dim range = Maximum - Minimum : If range = 0 Then range = 1
         Dim percent As Single = CSng(_value - Minimum) / range
         Dim currentSweep As Single = sweepAngle * percent
 
-        ' Track
-        Using pen As New Pen(Color.FromArgb(35, 35, 42), 3.0F)
+        ' Track di sfondo (grigio molto scuro, spesso)
+        Using pen As New Pen(Color.FromArgb(20, 20, 24), 4.5F)
             pen.StartCap = LineCap.Round : pen.EndCap = LineCap.Round
             g.DrawArc(pen, arcRect, startAngle, sweepAngle)
         End Using
 
-        ' Glow + main arc
+        ' Glow e linea neon
         If currentSweep > 0.5F Then
-            Using pen As New Pen(Color.FromArgb(35, AccentColor), 8.0F)
+            ' Glow blurrato
+            Using pen As New Pen(Color.FromArgb(60, AccentColor), 8.0F)
                 pen.StartCap = LineCap.Round : pen.EndCap = LineCap.Round
                 g.DrawArc(pen, arcRect, startAngle, currentSweep)
             End Using
-            Using pen As New Pen(AccentColor, 3.0F)
+            ' Linea solida vivida
+            Using pen As New Pen(AccentColor, 4.5F)
                 pen.StartCap = LineCap.Round : pen.EndCap = LineCap.Round
                 g.DrawArc(pen, arcRect, startAngle, currentSweep)
             End Using
         End If
 
-        ' === INDICATOR LINE ===
+        ' === INDICATOR DOT (Stile Minimal) ===
         Dim indicatorAngle = (startAngle + currentSweep) * Math.PI / 180.0
-        Dim lineIn = (innerSize \ 2) - 8 : Dim lineOut = (innerSize \ 2) + 2
-        Dim x1 = cx + CInt(lineIn * Math.Cos(indicatorAngle))
-        Dim y1 = cy + CInt(lineIn * Math.Sin(indicatorAngle))
-        Dim x2 = cx + CInt(lineOut * Math.Cos(indicatorAngle))
-        Dim y2 = cy + CInt(lineOut * Math.Sin(indicatorAngle))
-        Using pen As New Pen(AccentColor, 2.0F)
-            pen.StartCap = LineCap.Round : pen.EndCap = LineCap.Round
-            g.DrawLine(pen, x1, y1, x2, y2)
+        Dim dotDistance = (knobSize \ 2) - 14
+        Dim dx = cx + CInt(dotDistance * Math.Cos(indicatorAngle))
+        Dim dy = cy + CInt(dotDistance * Math.Sin(indicatorAngle))
+        
+        Using brush As New SolidBrush(Color.White)
+            g.FillEllipse(brush, dx - 2, dy - 2, 5, 5) ' Dot bianco opaco
         End Using
 
-        ' === VALUE TEXT ===
-        Using font As New Font("Segoe UI", 9, FontStyle.Bold)
-            Dim sz = g.MeasureString(_value.ToString(), font)
+        ' === VALUE E LABEL TEXT (Piccoli, PULITI) ===
+        Using fontVal As New Font("Segoe UI", 9.0F, FontStyle.Bold)
+            Dim strVal = _value.ToString()
+            Dim szVal = g.MeasureString(strVal, fontVal)
             Using b As New SolidBrush(ThemeColors.TextPrimary)
-                g.DrawString(_value.ToString(), font, b, cx - sz.Width / 2, cy - sz.Height / 2)
+                g.DrawString(strVal, fontVal, b, cx - szVal.Width / 2, cy - szVal.Height / 2)
             End Using
         End Using
 
-        ' === LABEL TEXT ===
-        Using font As New Font("Segoe UI", 7.5F, FontStyle.Regular)
-            Dim sz = g.MeasureString(KnobText, font)
-            Using b As New SolidBrush(ThemeColors.TextSecondary)
-                g.DrawString(KnobText, font, b, cx - sz.Width / 2, Height - 16)
+        Using fontLbl As New Font("Segoe UI", 8.0F, FontStyle.Regular)
+            Dim szLbl = g.MeasureString(KnobText.ToUpper(), fontLbl)
+            ' Hover accentua la label
+            Dim lblColor = If(_isHovered, ThemeColors.TextPrimary, ThemeColors.TextSecondary)
+            Using b As New SolidBrush(lblColor)
+                g.DrawString(KnobText.ToUpper(), fontLbl, b, cx - szLbl.Width / 2, Height - 18)
             End Using
         End Using
-
-        ' === HOVER RING ===
-        If _isHovered Then
-            Using pen As New Pen(Color.FromArgb(25, AccentColor), 1.5F)
-                g.DrawEllipse(pen, knobRect)
-            End Using
-        End If
     End Sub
 End Class
 
 ' ============================================================
-' ROCK SWITCH - Interruttore Premium con LED Glow
+' PILL SWITCH - Toggle Flat iOS Style
 ' ============================================================
 Public Class RockSwitch
     Inherits Control
 
     Private _checked As Boolean = False
     Private _isHovered As Boolean = False
+    Private _animationSlide As Single = 0.0F ' Simula l'animazione slide
+    Private _isSelected As Boolean = False
     Public Property CheckedColor As Color = Color.Lime
     Public Property LabelText As String = "SWITCH"
+
+    Public Event SelectClicked As EventHandler
 
     Public Property Checked As Boolean
         Get
@@ -264,8 +254,21 @@ Public Class RockSwitch
         Set(value As Boolean)
             If _checked <> value Then
                 _checked = value
+                _animationSlide = If(_checked, 1.0F, 0.0F) ' Senza animazione fluida reale, switch netto ma pulito
                 Me.Invalidate()
                 RaiseEvent CheckedChanged(Me, EventArgs.Empty)
+            End If
+        End Set
+    End Property
+
+    Public Property IsSelected As Boolean
+        Get
+            Return _isSelected
+        End Get
+        Set(value As Boolean)
+            If _isSelected <> value Then
+                _isSelected = value
+                Me.Invalidate()
             End If
         End Set
     End Property
@@ -273,14 +276,19 @@ Public Class RockSwitch
     Public Event CheckedChanged As EventHandler
 
     Public Sub New()
-        Me.Size = New Size(100, 30)
+        Me.Size = New Size(120, 30)
         Me.DoubleBuffered = True
         Me.Cursor = Cursors.Hand
         SetStyle(ControlStyles.AllPaintingInWmPaint Or ControlStyles.UserPaint Or ControlStyles.OptimizedDoubleBuffer, True)
     End Sub
 
-    Protected Overrides Sub OnClick(e As EventArgs)
-        Checked = Not Checked
+    Protected Overrides Sub OnMouseUp(e As MouseEventArgs)
+        If e.X < 50 Then
+            Checked = Not Checked
+        Else
+            RaiseEvent SelectClicked(Me, EventArgs.Empty)
+        End If
+        MyBase.OnMouseUp(e)
     End Sub
     Protected Overrides Sub OnMouseEnter(e As EventArgs)
         _isHovered = True : Me.Invalidate()
@@ -290,7 +298,7 @@ Public Class RockSwitch
     End Sub
 
     Protected Overrides Sub OnPaintBackground(e As PaintEventArgs)
-        Dim bgColor = If(Parent IsNot Nothing, Parent.BackColor, Color.FromArgb(22, 22, 28))
+        Dim bgColor = If(Parent IsNot Nothing, Parent.BackColor, ThemeColors.BgPanel)
         e.Graphics.Clear(bgColor)
     End Sub
 
@@ -299,60 +307,77 @@ Public Class RockSwitch
         g.SmoothingMode = SmoothingMode.AntiAlias
         g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit
 
-        Dim rect = New Rectangle(0, 0, Width - 1, Height - 1)
-        Dim radius = 6
+        ' Toggle Track (Pill shape)
+        Dim trackWidth = 44
+        Dim trackHeight = 22
+        Dim trackY = (Height - trackHeight) \ 2
+        Dim trackRect = New Rectangle(4, trackY, trackWidth, trackHeight)
+        Dim trackRadius = trackHeight \ 2
 
-        ' === BACKGROUND ===
-        Using path = ThemeColors.CreateRoundedRect(rect, radius)
-            Dim bgColor = If(_checked, Color.FromArgb(30, 30, 36), Color.FromArgb(20, 20, 24))
-            If _isHovered Then bgColor = Color.FromArgb(bgColor.R + 6, bgColor.G + 6, bgColor.B + 8)
+        Using path = ThemeColors.CreateRoundedRect(trackRect, trackRadius)
+            ' Colore Sfondo Track
+            Dim bgColor = If(_checked, CheckedColor, ThemeColors.Surface)
             Using brush As New SolidBrush(bgColor)
                 g.FillPath(brush, path)
             End Using
-            Dim borderColor = If(_checked, Color.FromArgb(70, CheckedColor), Color.FromArgb(45, 45, 52))
-            If _isHovered AndAlso Not _checked Then borderColor = Color.FromArgb(65, 65, 75)
-            Using pen As New Pen(borderColor, 1.0F)
-                g.DrawPath(pen, path)
-            End Using
+            
+            ' Inner shadow se SPENTO per dare profondità di "buco", Glow in hover se ACCESO
+            If Not _checked Then
+                Using pen As New Pen(Color.FromArgb(100, 0, 0, 0), 2.0F)
+                    g.DrawPath(pen, path)
+                End Using
+            ElseIf _isHovered Then
+                ' Hover highlight sulla track se acceso
+                Using pen As New Pen(Color.FromArgb(100, 255, 255, 255), 2.0F)
+                    g.DrawPath(pen, path)
+                End Using
+            End If
         End Using
 
-        ' === LED with GLOW ===
-        Dim ledX = 10, ledY = (Height - 12) \ 2, ledSize = 12
-        If _checked Then
-            For i = 3 To 1 Step -1
-                Dim gr = New Rectangle(ledX - i * 3, ledY - i * 3, ledSize + i * 6, ledSize + i * 6)
-                Using b As New SolidBrush(Color.FromArgb(10 * i, CheckedColor))
-                    g.FillEllipse(b, gr)
-                End Using
-            Next
-            Using b As New SolidBrush(CheckedColor)
-                g.FillEllipse(b, ledX, ledY, ledSize, ledSize)
-            End Using
-            Using b As New SolidBrush(Color.FromArgb(180, 255, 255, 255))
-                g.FillEllipse(b, ledX + 3, ledY + 2, 5, 5)
-            End Using
-        Else
-            Using b As New SolidBrush(Color.FromArgb(35, 35, 40))
-                g.FillEllipse(b, ledX, ledY, ledSize, ledSize)
-            End Using
-            Using pen As New Pen(Color.FromArgb(50, 50, 56), 1.0F)
-                g.DrawEllipse(pen, ledX, ledY, ledSize, ledSize)
-            End Using
-        End If
+        ' Toggle Thumb (Cerchio bianco perfetto)
+        Dim thumbSize = 18
+        Dim thumbY = trackY + 2
+        Dim thumbXStart = 6
+        Dim thumbXEnd = trackWidth + 4 - thumbSize - 2
+        Dim thumbX = If(_checked, thumbXEnd, thumbXStart)
+        
+        Dim thumbRect = New Rectangle(thumbX, thumbY, thumbSize, thumbSize)
+        
+        ' Ombra sotto il thumb
+        Using brush As New SolidBrush(Color.FromArgb(100, 0, 0, 0))
+            g.FillEllipse(brush, thumbRect.X, thumbRect.Y + 1, thumbSize, thumbSize)
+        End Using
+        
+        Using brush As New SolidBrush(Color.White)
+            g.FillEllipse(brush, thumbRect)
+        End Using
 
-        ' === LABEL ===
-        Using font As New Font("Segoe UI", 8.5F, FontStyle.Regular)
+        ' Label Text
+        Using font As New Font("Segoe UI", 9.0F, FontStyle.Regular)
             Dim txtColor = If(_checked, ThemeColors.TextPrimary, ThemeColors.TextSecondary)
+            If _isHovered AndAlso Not _checked Then txtColor = Color.FromArgb(180, 180, 190)
+            If _isSelected Then txtColor = ThemeColors.AccentCyan ' Text becomes Cyan when selected!
+            
             Dim sz = g.MeasureString(LabelText, font)
+            Dim lblY = (Height - sz.Height) / 2
+            
+            ' Selezionato: Glow dietro il testo
+            If _isSelected Then
+                Dim bgRect = New Rectangle(54, CInt(lblY), CInt(sz.Width + 8), CInt(sz.Height))
+                Using bGlow As New SolidBrush(Color.FromArgb(20, ThemeColors.AccentCyan))
+                    g.FillRectangle(bGlow, bgRect)
+                End Using
+            End If
+
             Using b As New SolidBrush(txtColor)
-                g.DrawString(LabelText, font, b, 30, (Height - sz.Height) / 2)
+                g.DrawString(LabelText, font, b, 58, lblY)
             End Using
         End Using
     End Sub
 End Class
 
 ' ============================================================
-' MODERN BUTTON - Bottone Premium con Rounded Corners
+' MODERN BUTTON - "Flat/Solid Pill" Style
 ' ============================================================
 Public Class ModernButton
     Inherits Control
@@ -364,7 +389,7 @@ Public Class ModernButton
         Me.Size = New Size(100, 30)
         Me.DoubleBuffered = True
         Me.Cursor = Cursors.Hand
-        SetStyle(ControlStyles.AllPaintingInWmPaint Or ControlStyles.UserPaint Or ControlStyles.OptimizedDoubleBuffer Or ControlStyles.SupportsTransparentBackColor, True)
+        SetStyle(ControlStyles.AllPaintingInWmPaint Or ControlStyles.UserPaint Or ControlStyles.OptimizedDoubleBuffer, True)
     End Sub
 
     Public Sub PerformClick()
@@ -387,7 +412,7 @@ Public Class ModernButton
     End Sub
 
     Protected Overrides Sub OnPaintBackground(e As PaintEventArgs)
-        Dim bgColor = If(Parent IsNot Nothing, Parent.BackColor, Color.FromArgb(13, 13, 13))
+        Dim bgColor = If(Parent IsNot Nothing, Parent.BackColor, ThemeColors.BgPanel)
         e.Graphics.Clear(bgColor)
     End Sub
 
@@ -396,47 +421,48 @@ Public Class ModernButton
         g.SmoothingMode = SmoothingMode.AntiAlias
         g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit
 
-        Dim rect = New Rectangle(0, 0, Width - 1, Height - 1)
-        Dim radius = 8
+        Dim rect = New Rectangle(1, 1, Width - 3, Height - 3)
+        Dim radius = Height \ 2 ' Round Pill
 
         Using path = ThemeColors.CreateRoundedRect(rect, radius)
-            Dim bg = Me.BackColor
+            ' Definiamo i colori base e le variazioni usando ForeColor e BackColor del controllo
+            Dim baseBg = Me.BackColor
+            Dim baseFore = Me.ForeColor
+            
+            ' Hover & Pressed Effects
             If Not Me.Enabled Then
-                bg = Color.FromArgb(30, 30, 35)
+                baseBg = ThemeColors.Surface
+                baseFore = ThemeColors.TextSecondary
             ElseIf _isPressed Then
-                bg = Color.FromArgb(Math.Max(bg.R - 20, 0), Math.Max(bg.G - 20, 0), Math.Max(bg.B - 20, 0))
+                baseBg = Color.FromArgb(Math.Max(baseBg.R - 20, 0), Math.Max(baseBg.G - 20, 0), Math.Max(baseBg.B - 20, 0))
             ElseIf _isHovered Then
-                bg = Color.FromArgb(Math.Min(bg.R + 15, 255), Math.Min(bg.G + 15, 255), Math.Min(bg.B + 15, 255))
+                baseBg = Color.FromArgb(Math.Min(baseBg.R + 25, 255), Math.Min(baseBg.G + 25, 255), Math.Min(baseBg.B + 25, 255))
             End If
 
-            ' Gradient fill
-            Dim c1 = Color.FromArgb(Math.Min(bg.R + 10, 255), Math.Min(bg.G + 10, 255), Math.Min(bg.B + 10, 255))
-            Dim c2 = Color.FromArgb(Math.Max(bg.R - 8, 0), Math.Max(bg.G - 8, 0), Math.Max(bg.B - 8, 0))
-            Using brush As New LinearGradientBrush(rect, c1, c2, 90.0F)
+            ' Sfondo super opaco e solido
+            Using brush As New SolidBrush(baseBg)
                 g.FillPath(brush, path)
             End Using
 
-            ' Border
-            Dim brd = If(_isHovered, Color.FromArgb(100, 255, 255, 255), Color.FromArgb(40, 255, 255, 255))
-            Using pen As New Pen(brd, 1.0F)
+            ' Bordo "Neon" visibile ad alto contrasto (che prende il colore del testo, di solito accentuato)
+            Dim penAlpha = If(_isHovered, 255, 120)
+            Using pen As New Pen(Color.FromArgb(penAlpha, baseFore), 1.5F)
                 g.DrawPath(pen, path)
             End Using
-
-            ' Hover top glow
-            If _isHovered Then
-                Dim glowR = New Rectangle(2, 1, Width - 5, 3)
-                Using gb As New LinearGradientBrush(glowR, Color.FromArgb(30, Me.ForeColor), Color.Transparent, 90.0F)
-                    g.FillRectangle(gb, glowR)
+            
+            If _isHovered AndAlso Me.Enabled Then
+                ' Outer glow su hover
+                Using penGlow As New Pen(Color.FromArgb(40, baseFore), 4.0F)
+                    g.DrawPath(penGlow, path)
                 End Using
             End If
-        End Using
-
-        ' Text
-        Using font As New Font("Segoe UI", 8.5F, FontStyle.Bold)
-            Dim sz = g.MeasureString(Text, font)
-            Dim txtColor = If(Me.Enabled, Me.ForeColor, ThemeColors.TextSecondary)
-            Using b As New SolidBrush(txtColor)
-                g.DrawString(Text, font, b, (Width - sz.Width) / 2, (Height - sz.Height) / 2)
+            
+            ' Text
+            Using font As New Font("Segoe UI", 9.0F, FontStyle.Bold)
+                Dim sz = g.MeasureString(Text, font)
+                Using b As New SolidBrush(baseFore)
+                    g.DrawString(Text, font, b, (Width - sz.Width) / 2, (Height - sz.Height) / 2)
+                End Using
             End Using
         End Using
     End Sub

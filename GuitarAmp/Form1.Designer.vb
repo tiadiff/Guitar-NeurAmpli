@@ -16,13 +16,16 @@ Partial Class Form1
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
-        Me.cmbInput = New System.Windows.Forms.ComboBox()
-        Me.btnStart = New NeurAmpli.ModernButton()
-        Me.btnStop = New NeurAmpli.ModernButton()
-        Me.btnRec = New NeurAmpli.ModernButton()
-        Me.picVuMeter = New System.Windows.Forms.PictureBox()
         Me.tmrVisuals = New System.Windows.Forms.Timer(Me.components)
+        Me.ToolStripContainer1 = New System.Windows.Forms.ToolStripContainer()
+        Me.Label3 = New System.Windows.Forms.Label()
+        Me.Button2 = New NeurAmpli.ModernButton()
         Me.pnlMain = New NeurAmpli.GlassPanel()
+        Me.pnlFX = New NeurAmpli.GlassPanel()
+        Me.lblFXTitle = New System.Windows.Forms.Label()
+        Me.knobFX1 = New NeurAmpli.RockKnob()
+        Me.knobFX2 = New NeurAmpli.RockKnob()
+        Me.knobFX3 = New NeurAmpli.RockKnob()
         Me.swComp = New NeurAmpli.RockSwitch()
         Me.swChorus = New NeurAmpli.RockSwitch()
         Me.knobGate = New NeurAmpli.RockKnob()
@@ -33,85 +36,92 @@ Partial Class Form1
         Me.knobBass = New NeurAmpli.RockKnob()
         Me.knobMid = New NeurAmpli.RockKnob()
         Me.knobTreble = New NeurAmpli.RockKnob()
+        Me.cmbInput = New System.Windows.Forms.ComboBox()
         Me.knobVol = New NeurAmpli.RockKnob()
+        Me.btnStart = New NeurAmpli.ModernButton()
+        Me.btnStop = New NeurAmpli.ModernButton()
+        Me.picVuMeter = New System.Windows.Forms.PictureBox()
         Me.swCabSim = New NeurAmpli.RockSwitch()
         Me.Label2 = New System.Windows.Forms.Label()
         Me.Label1 = New System.Windows.Forms.Label()
         Me.swExclusive = New NeurAmpli.RockSwitch()
+        Me.Button1 = New NeurAmpli.ModernButton()
+        Me.btnRec = New NeurAmpli.ModernButton()
         Me.btnClean = New NeurAmpli.ModernButton()
         Me.btnCrunch = New NeurAmpli.ModernButton()
         Me.btnMetal = New NeurAmpli.ModernButton()
-        Me.Button2 = New NeurAmpli.ModernButton()
-        Me.Button1 = New NeurAmpli.ModernButton()
-        Me.ToolStripContainer1 = New System.Windows.Forms.ToolStripContainer()
-        Me.Label3 = New System.Windows.Forms.Label()
+        Me.btnUsr1 = New NeurAmpli.ModernButton()
+        Me.btnUsr2 = New NeurAmpli.ModernButton()
+        Me.btnUsr3 = New NeurAmpli.ModernButton()
         Me.Timer1 = New System.Windows.Forms.Timer(Me.components)
-        CType(Me.picVuMeter, System.ComponentModel.ISupportInitialize).BeginInit()
-        Me.pnlMain.SuspendLayout()
         Me.ToolStripContainer1.ContentPanel.SuspendLayout()
         Me.ToolStripContainer1.SuspendLayout()
+        Me.pnlMain.SuspendLayout()
+        Me.pnlFX.SuspendLayout()
+        CType(Me.picVuMeter, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
-        '
-        'cmbInput
-        '
-        Me.cmbInput.BackColor = System.Drawing.Color.FromArgb(CType(CType(37, Byte), Integer), CType(CType(37, Byte), Integer), CType(CType(41, Byte), Integer))
-        Me.cmbInput.FlatStyle = System.Windows.Forms.FlatStyle.Flat
-        Me.cmbInput.ForeColor = System.Drawing.Color.FromArgb(CType(CType(240, Byte), Integer), CType(CType(236, Byte), Integer), CType(CType(229, Byte), Integer))
-        Me.cmbInput.FormattingEnabled = True
-        Me.cmbInput.Location = New System.Drawing.Point(411, 232)
-        Me.cmbInput.Name = "cmbInput"
-        Me.cmbInput.Size = New System.Drawing.Size(170, 21)
-        Me.cmbInput.TabIndex = 1
-        '
-        'btnStart
-        '
-        Me.btnStart.BackColor = System.Drawing.Color.FromArgb(CType(CType(25, Byte), Integer), CType(CType(60, Byte), Integer), CType(CType(35, Byte), Integer))
-        Me.btnStart.Cursor = System.Windows.Forms.Cursors.Hand
-        Me.btnStart.ForeColor = System.Drawing.Color.FromArgb(CType(CType(46, Byte), Integer), CType(CType(213, Byte), Integer), CType(CType(115, Byte), Integer))
-        Me.btnStart.Location = New System.Drawing.Point(307, 191)
-        Me.btnStart.Name = "btnStart"
-        Me.btnStart.Size = New System.Drawing.Size(122, 30)
-        Me.btnStart.TabIndex = 2
-        Me.btnStart.Text = "ON"
-        '
-        'btnStop
-        '
-        Me.btnStop.BackColor = System.Drawing.Color.FromArgb(CType(CType(60, Byte), Integer), CType(CType(20, Byte), Integer), CType(CType(25, Byte), Integer))
-        Me.btnStop.Cursor = System.Windows.Forms.Cursors.Hand
-        Me.btnStop.ForeColor = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(71, Byte), Integer), CType(CType(87, Byte), Integer))
-        Me.btnStop.Location = New System.Drawing.Point(307, 157)
-        Me.btnStop.Name = "btnStop"
-        Me.btnStop.Size = New System.Drawing.Size(54, 30)
-        Me.btnStop.TabIndex = 3
-        Me.btnStop.Text = "OFF"
-        '
-        'btnRec
-        '
-        Me.btnRec.BackColor = System.Drawing.Color.FromArgb(CType(CType(80, Byte), Integer), CType(CType(40, Byte), Integer), CType(CType(10, Byte), Integer))
-        Me.btnRec.Cursor = System.Windows.Forms.Cursors.Hand
-        Me.btnRec.ForeColor = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(140, Byte), Integer), CType(CType(0, Byte), Integer))
-        Me.btnRec.Location = New System.Drawing.Point(366, 331)
-        Me.btnRec.Name = "btnRec"
-        Me.btnRec.Size = New System.Drawing.Size(20, 20)
-        Me.btnRec.TabIndex = 4
-        '
-        'picVuMeter
-        '
-        Me.picVuMeter.BackColor = System.Drawing.Color.Black
-        Me.picVuMeter.Location = New System.Drawing.Point(11, 263)
-        Me.picVuMeter.Name = "picVuMeter"
-        Me.picVuMeter.Size = New System.Drawing.Size(574, 30)
-        Me.picVuMeter.TabIndex = 2
-        Me.picVuMeter.TabStop = False
         '
         'tmrVisuals
         '
         Me.tmrVisuals.Enabled = True
         Me.tmrVisuals.Interval = 30
         '
+        'ToolStripContainer1
+        '
+        Me.ToolStripContainer1.BottomToolStripPanelVisible = False
+        '
+        'ToolStripContainer1.ContentPanel
+        '
+        Me.ToolStripContainer1.ContentPanel.AutoScroll = True
+        Me.ToolStripContainer1.ContentPanel.Controls.Add(Me.Label3)
+        Me.ToolStripContainer1.ContentPanel.Controls.Add(Me.Button2)
+        Me.ToolStripContainer1.ContentPanel.Controls.Add(Me.pnlMain)
+        Me.ToolStripContainer1.ContentPanel.Controls.Add(Me.Button1)
+        Me.ToolStripContainer1.ContentPanel.Controls.Add(Me.btnRec)
+        Me.ToolStripContainer1.ContentPanel.Controls.Add(Me.btnClean)
+        Me.ToolStripContainer1.ContentPanel.Controls.Add(Me.btnCrunch)
+        Me.ToolStripContainer1.ContentPanel.Controls.Add(Me.btnMetal)
+        Me.ToolStripContainer1.ContentPanel.Controls.Add(Me.btnUsr1)
+        Me.ToolStripContainer1.ContentPanel.Controls.Add(Me.btnUsr2)
+        Me.ToolStripContainer1.ContentPanel.Controls.Add(Me.btnUsr3)
+        Me.ToolStripContainer1.ContentPanel.Size = New System.Drawing.Size(918, 365)
+        Me.ToolStripContainer1.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.ToolStripContainer1.LeftToolStripPanelVisible = False
+        Me.ToolStripContainer1.Location = New System.Drawing.Point(0, 0)
+        Me.ToolStripContainer1.Name = "ToolStripContainer1"
+        Me.ToolStripContainer1.RightToolStripPanelVisible = False
+        Me.ToolStripContainer1.Size = New System.Drawing.Size(918, 365)
+        Me.ToolStripContainer1.TabIndex = 1
+        Me.ToolStripContainer1.Text = "ToolStripContainer1"
+        Me.ToolStripContainer1.TopToolStripPanelVisible = False
+        '
+        'Label3
+        '
+        Me.Label3.Anchor = System.Windows.Forms.AnchorStyles.Left
+        Me.Label3.AutoSize = True
+        Me.Label3.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label3.ForeColor = System.Drawing.Color.FromArgb(CType(CType(138, Byte), Integer), CType(CType(138, Byte), Integer), CType(CType(150, Byte), Integer))
+        Me.Label3.Location = New System.Drawing.Point(727, 331)
+        Me.Label3.Name = "Label3"
+        Me.Label3.Size = New System.Drawing.Size(75, 19)
+        Me.Label3.TabIndex = 9
+        Me.Label3.Text = "REC: 00:00"
+        '
+        'Button2
+        '
+        Me.Button2.BackColor = System.Drawing.Color.FromArgb(CType(CType(37, Byte), Integer), CType(CType(37, Byte), Integer), CType(CType(41, Byte), Integer))
+        Me.Button2.Cursor = System.Windows.Forms.Cursors.Hand
+        Me.Button2.ForeColor = System.Drawing.Color.FromArgb(CType(CType(138, Byte), Integer), CType(CType(138, Byte), Integer), CType(CType(150, Byte), Integer))
+        Me.Button2.Location = New System.Drawing.Point(832, 327)
+        Me.Button2.Name = "Button2"
+        Me.Button2.Size = New System.Drawing.Size(31, 28)
+        Me.Button2.TabIndex = 8
+        Me.Button2.Text = "_"
+        '
         'pnlMain
         '
         Me.pnlMain.BackColor = System.Drawing.Color.FromArgb(CType(CType(22, Byte), Integer), CType(CType(22, Byte), Integer), CType(CType(28, Byte), Integer))
+        Me.pnlMain.Controls.Add(Me.pnlFX)
         Me.pnlMain.Controls.Add(Me.swComp)
         Me.pnlMain.Controls.Add(Me.swChorus)
         Me.pnlMain.Controls.Add(Me.knobGate)
@@ -133,18 +143,87 @@ Partial Class Form1
         Me.pnlMain.Controls.Add(Me.swExclusive)
         Me.pnlMain.Location = New System.Drawing.Point(12, 12)
         Me.pnlMain.Name = "pnlMain"
-        Me.pnlMain.Size = New System.Drawing.Size(597, 307)
+        Me.pnlMain.Size = New System.Drawing.Size(893, 307)
         Me.pnlMain.TabIndex = 0
+        '
+        'pnlFX
+        '
+        Me.pnlFX.BackColor = System.Drawing.Color.FromArgb(CType(CType(20, Byte), Integer), CType(CType(20, Byte), Integer), CType(CType(24, Byte), Integer))
+        Me.pnlFX.Controls.Add(Me.lblFXTitle)
+        Me.pnlFX.Controls.Add(Me.knobFX1)
+        Me.pnlFX.Controls.Add(Me.knobFX2)
+        Me.pnlFX.Controls.Add(Me.knobFX3)
+        Me.pnlFX.Location = New System.Drawing.Point(653, 10)
+        Me.pnlFX.Name = "pnlFX"
+        Me.pnlFX.Size = New System.Drawing.Size(220, 242)
+        Me.pnlFX.TabIndex = 11
+        '
+        'lblFXTitle
+        '
+        Me.lblFXTitle.Font = New System.Drawing.Font("Segoe UI", 12.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.lblFXTitle.ForeColor = System.Drawing.Color.FromArgb(CType(CType(0, Byte), Integer), CType(CType(240, Byte), Integer), CType(CType(255, Byte), Integer))
+        Me.lblFXTitle.Location = New System.Drawing.Point(2, 15)
+        Me.lblFXTitle.Name = "lblFXTitle"
+        Me.lblFXTitle.Size = New System.Drawing.Size(216, 30)
+        Me.lblFXTitle.TabIndex = 0
+        Me.lblFXTitle.Text = "SELECT EFFECT"
+        Me.lblFXTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        '
+        'knobFX1
+        '
+        Me.knobFX1.AccentColor = System.Drawing.Color.FromArgb(CType(CType(0, Byte), Integer), CType(CType(240, Byte), Integer), CType(CType(255, Byte), Integer))
+        Me.knobFX1.BackColor = System.Drawing.Color.FromArgb(CType(CType(20, Byte), Integer), CType(CType(20, Byte), Integer), CType(CType(24, Byte), Integer))
+        Me.knobFX1.ForeColor = System.Drawing.Color.White
+        Me.knobFX1.KnobText = ""
+        Me.knobFX1.Location = New System.Drawing.Point(20, 45)
+        Me.knobFX1.Maximum = 10
+        Me.knobFX1.Minimum = 0
+        Me.knobFX1.Name = "knobFX1"
+        Me.knobFX1.Size = New System.Drawing.Size(80, 100)
+        Me.knobFX1.TabIndex = 1
+        Me.knobFX1.Value = 0
+        Me.knobFX1.Visible = False
+        '
+        'knobFX2
+        '
+        Me.knobFX2.AccentColor = System.Drawing.Color.FromArgb(CType(CType(0, Byte), Integer), CType(CType(240, Byte), Integer), CType(CType(255, Byte), Integer))
+        Me.knobFX2.BackColor = System.Drawing.Color.FromArgb(CType(CType(20, Byte), Integer), CType(CType(20, Byte), Integer), CType(CType(24, Byte), Integer))
+        Me.knobFX2.ForeColor = System.Drawing.Color.White
+        Me.knobFX2.KnobText = ""
+        Me.knobFX2.Location = New System.Drawing.Point(120, 45)
+        Me.knobFX2.Maximum = 10
+        Me.knobFX2.Minimum = 0
+        Me.knobFX2.Name = "knobFX2"
+        Me.knobFX2.Size = New System.Drawing.Size(80, 100)
+        Me.knobFX2.TabIndex = 2
+        Me.knobFX2.Value = 0
+        Me.knobFX2.Visible = False
+        '
+        'knobFX3
+        '
+        Me.knobFX3.AccentColor = System.Drawing.Color.FromArgb(CType(CType(0, Byte), Integer), CType(CType(240, Byte), Integer), CType(CType(255, Byte), Integer))
+        Me.knobFX3.BackColor = System.Drawing.Color.FromArgb(CType(CType(20, Byte), Integer), CType(CType(20, Byte), Integer), CType(CType(24, Byte), Integer))
+        Me.knobFX3.ForeColor = System.Drawing.Color.White
+        Me.knobFX3.KnobText = ""
+        Me.knobFX3.Location = New System.Drawing.Point(70, 140)
+        Me.knobFX3.Maximum = 10
+        Me.knobFX3.Minimum = 0
+        Me.knobFX3.Name = "knobFX3"
+        Me.knobFX3.Size = New System.Drawing.Size(80, 100)
+        Me.knobFX3.TabIndex = 3
+        Me.knobFX3.Value = 0
+        Me.knobFX3.Visible = False
         '
         'swComp
         '
         Me.swComp.Checked = False
         Me.swComp.CheckedColor = System.Drawing.Color.Orange
         Me.swComp.Cursor = System.Windows.Forms.Cursors.Hand
+        Me.swComp.IsSelected = False
         Me.swComp.LabelText = "COMP"
-        Me.swComp.Location = New System.Drawing.Point(435, 51)
+        Me.swComp.Location = New System.Drawing.Point(324, 176)
         Me.swComp.Name = "swComp"
-        Me.swComp.Size = New System.Drawing.Size(150, 30)
+        Me.swComp.Size = New System.Drawing.Size(122, 30)
         Me.swComp.TabIndex = 0
         '
         'swChorus
@@ -152,8 +231,9 @@ Partial Class Form1
         Me.swChorus.Checked = False
         Me.swChorus.CheckedColor = System.Drawing.Color.Magenta
         Me.swChorus.Cursor = System.Windows.Forms.Cursors.Hand
+        Me.swChorus.IsSelected = False
         Me.swChorus.LabelText = "CHORUS"
-        Me.swChorus.Location = New System.Drawing.Point(435, 86)
+        Me.swChorus.Location = New System.Drawing.Point(477, 68)
         Me.swChorus.Name = "swChorus"
         Me.swChorus.Size = New System.Drawing.Size(150, 30)
         Me.swChorus.TabIndex = 1
@@ -176,8 +256,9 @@ Partial Class Form1
         Me.swDelay.Checked = False
         Me.swDelay.CheckedColor = System.Drawing.Color.DeepSkyBlue
         Me.swDelay.Cursor = System.Windows.Forms.Cursors.Hand
+        Me.swDelay.IsSelected = False
         Me.swDelay.LabelText = "DELAY"
-        Me.swDelay.Location = New System.Drawing.Point(435, 121)
+        Me.swDelay.Location = New System.Drawing.Point(477, 104)
         Me.swDelay.Name = "swDelay"
         Me.swDelay.Size = New System.Drawing.Size(150, 30)
         Me.swDelay.TabIndex = 2
@@ -200,8 +281,9 @@ Partial Class Form1
         Me.swTremolo.Checked = False
         Me.swTremolo.CheckedColor = System.Drawing.Color.Lime
         Me.swTremolo.Cursor = System.Windows.Forms.Cursors.Hand
+        Me.swTremolo.IsSelected = False
         Me.swTremolo.LabelText = "TREMOLO"
-        Me.swTremolo.Location = New System.Drawing.Point(435, 156)
+        Me.swTremolo.Location = New System.Drawing.Point(477, 140)
         Me.swTremolo.Name = "swTremolo"
         Me.swTremolo.Size = New System.Drawing.Size(150, 30)
         Me.swTremolo.TabIndex = 3
@@ -211,8 +293,9 @@ Partial Class Form1
         Me.swReverb.Checked = False
         Me.swReverb.CheckedColor = System.Drawing.Color.Cyan
         Me.swReverb.Cursor = System.Windows.Forms.Cursors.Hand
+        Me.swReverb.IsSelected = False
         Me.swReverb.LabelText = "REVERB"
-        Me.swReverb.Location = New System.Drawing.Point(435, 191)
+        Me.swReverb.Location = New System.Drawing.Point(477, 176)
         Me.swReverb.Name = "swReverb"
         Me.swReverb.Size = New System.Drawing.Size(150, 30)
         Me.swReverb.TabIndex = 4
@@ -256,6 +339,17 @@ Partial Class Form1
         Me.knobTreble.TabIndex = 4
         Me.knobTreble.Value = 0
         '
+        'cmbInput
+        '
+        Me.cmbInput.BackColor = System.Drawing.Color.FromArgb(CType(CType(37, Byte), Integer), CType(CType(37, Byte), Integer), CType(CType(41, Byte), Integer))
+        Me.cmbInput.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.cmbInput.ForeColor = System.Drawing.Color.FromArgb(CType(CType(240, Byte), Integer), CType(CType(236, Byte), Integer), CType(CType(229, Byte), Integer))
+        Me.cmbInput.FormattingEnabled = True
+        Me.cmbInput.Location = New System.Drawing.Point(324, 231)
+        Me.cmbInput.Name = "cmbInput"
+        Me.cmbInput.Size = New System.Drawing.Size(297, 21)
+        Me.cmbInput.TabIndex = 1
+        '
         'knobVol
         '
         Me.knobVol.AccentColor = System.Drawing.Color.White
@@ -269,15 +363,47 @@ Partial Class Form1
         Me.knobVol.TabIndex = 5
         Me.knobVol.Value = 0
         '
+        'btnStart
+        '
+        Me.btnStart.BackColor = System.Drawing.Color.FromArgb(CType(CType(25, Byte), Integer), CType(CType(60, Byte), Integer), CType(CType(35, Byte), Integer))
+        Me.btnStart.Cursor = System.Windows.Forms.Cursors.Hand
+        Me.btnStart.ForeColor = System.Drawing.Color.FromArgb(CType(CType(46, Byte), Integer), CType(CType(213, Byte), Integer), CType(CType(115, Byte), Integer))
+        Me.btnStart.Location = New System.Drawing.Point(505, 14)
+        Me.btnStart.Name = "btnStart"
+        Me.btnStart.Size = New System.Drawing.Size(122, 30)
+        Me.btnStart.TabIndex = 2
+        Me.btnStart.Text = "ON"
+        '
+        'btnStop
+        '
+        Me.btnStop.BackColor = System.Drawing.Color.FromArgb(CType(CType(60, Byte), Integer), CType(CType(20, Byte), Integer), CType(CType(25, Byte), Integer))
+        Me.btnStop.Cursor = System.Windows.Forms.Cursors.Hand
+        Me.btnStop.ForeColor = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(71, Byte), Integer), CType(CType(87, Byte), Integer))
+        Me.btnStop.Location = New System.Drawing.Point(445, 14)
+        Me.btnStop.Name = "btnStop"
+        Me.btnStop.Size = New System.Drawing.Size(54, 30)
+        Me.btnStop.TabIndex = 3
+        Me.btnStop.Text = "OFF"
+        '
+        'picVuMeter
+        '
+        Me.picVuMeter.BackColor = System.Drawing.Color.Black
+        Me.picVuMeter.Location = New System.Drawing.Point(15, 263)
+        Me.picVuMeter.Name = "picVuMeter"
+        Me.picVuMeter.Size = New System.Drawing.Size(858, 30)
+        Me.picVuMeter.TabIndex = 2
+        Me.picVuMeter.TabStop = False
+        '
         'swCabSim
         '
         Me.swCabSim.Checked = True
         Me.swCabSim.CheckedColor = System.Drawing.Color.Gold
         Me.swCabSim.Cursor = System.Windows.Forms.Cursors.Hand
+        Me.swCabSim.IsSelected = False
         Me.swCabSim.LabelText = "CAB SIM"
-        Me.swCabSim.Location = New System.Drawing.Point(307, 228)
+        Me.swCabSim.Location = New System.Drawing.Point(324, 140)
         Me.swCabSim.Name = "swCabSim"
-        Me.swCabSim.Size = New System.Drawing.Size(278, 30)
+        Me.swCabSim.Size = New System.Drawing.Size(122, 30)
         Me.swCabSim.TabIndex = 5
         '
         'Label2
@@ -290,7 +416,7 @@ Partial Class Form1
         Me.Label2.Name = "Label2"
         Me.Label2.Size = New System.Drawing.Size(37, 15)
         Me.Label2.TabIndex = 10
-        Me.Label2.Text = "v2.4.1"
+        Me.Label2.Text = "v2.5.3"
         '
         'Label1
         '
@@ -308,20 +434,43 @@ Partial Class Form1
         Me.swExclusive.Checked = False
         Me.swExclusive.CheckedColor = System.Drawing.Color.Red
         Me.swExclusive.Cursor = System.Windows.Forms.Cursors.Hand
+        Me.swExclusive.IsSelected = False
         Me.swExclusive.LabelText = "EXCLUSIVE"
-        Me.swExclusive.Location = New System.Drawing.Point(307, 121)
+        Me.swExclusive.Location = New System.Drawing.Point(324, 104)
         Me.swExclusive.Name = "swExclusive"
         Me.swExclusive.Size = New System.Drawing.Size(122, 30)
         Me.swExclusive.TabIndex = 6
+        '
+        'Button1
+        '
+        Me.Button1.BackColor = System.Drawing.Color.FromArgb(CType(CType(60, Byte), Integer), CType(CType(20, Byte), Integer), CType(CType(25, Byte), Integer))
+        Me.Button1.Cursor = System.Windows.Forms.Cursors.Hand
+        Me.Button1.ForeColor = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(71, Byte), Integer), CType(CType(87, Byte), Integer))
+        Me.Button1.Location = New System.Drawing.Point(862, 327)
+        Me.Button1.Name = "Button1"
+        Me.Button1.Size = New System.Drawing.Size(31, 28)
+        Me.Button1.TabIndex = 7
+        Me.Button1.Text = "X"
+        '
+        'btnRec
+        '
+        Me.btnRec.Anchor = System.Windows.Forms.AnchorStyles.Left
+        Me.btnRec.BackColor = System.Drawing.Color.FromArgb(CType(CType(80, Byte), Integer), CType(CType(40, Byte), Integer), CType(CType(10, Byte), Integer))
+        Me.btnRec.Cursor = System.Windows.Forms.Cursors.Hand
+        Me.btnRec.ForeColor = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(140, Byte), Integer), CType(CType(0, Byte), Integer))
+        Me.btnRec.Location = New System.Drawing.Point(701, 331)
+        Me.btnRec.Name = "btnRec"
+        Me.btnRec.Size = New System.Drawing.Size(20, 20)
+        Me.btnRec.TabIndex = 4
         '
         'btnClean
         '
         Me.btnClean.BackColor = System.Drawing.Color.FromArgb(CType(CType(30, Byte), Integer), CType(CType(55, Byte), Integer), CType(CType(35, Byte), Integer))
         Me.btnClean.Cursor = System.Windows.Forms.Cursors.Hand
         Me.btnClean.ForeColor = System.Drawing.Color.FromArgb(CType(CType(160, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(140, Byte), Integer))
-        Me.btnClean.Location = New System.Drawing.Point(13, 327)
+        Me.btnClean.Location = New System.Drawing.Point(12, 327)
         Me.btnClean.Name = "btnClean"
-        Me.btnClean.Size = New System.Drawing.Size(100, 28)
+        Me.btnClean.Size = New System.Drawing.Size(127, 28)
         Me.btnClean.TabIndex = 0
         Me.btnClean.Text = "Clean Tone"
         '
@@ -330,9 +479,9 @@ Partial Class Form1
         Me.btnCrunch.BackColor = System.Drawing.Color.FromArgb(CType(CType(65, Byte), Integer), CType(CType(45, Byte), Integer), CType(CType(15, Byte), Integer))
         Me.btnCrunch.Cursor = System.Windows.Forms.Cursors.Hand
         Me.btnCrunch.ForeColor = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(200, Byte), Integer), CType(CType(80, Byte), Integer))
-        Me.btnCrunch.Location = New System.Drawing.Point(113, 327)
+        Me.btnCrunch.Location = New System.Drawing.Point(145, 327)
         Me.btnCrunch.Name = "btnCrunch"
-        Me.btnCrunch.Size = New System.Drawing.Size(100, 28)
+        Me.btnCrunch.Size = New System.Drawing.Size(127, 28)
         Me.btnCrunch.TabIndex = 1
         Me.btnCrunch.Text = "Crunchy Heaven"
         '
@@ -341,70 +490,44 @@ Partial Class Form1
         Me.btnMetal.BackColor = System.Drawing.Color.FromArgb(CType(CType(70, Byte), Integer), CType(CType(20, Byte), Integer), CType(CType(25, Byte), Integer))
         Me.btnMetal.Cursor = System.Windows.Forms.Cursors.Hand
         Me.btnMetal.ForeColor = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(100, Byte), Integer), CType(CType(100, Byte), Integer))
-        Me.btnMetal.Location = New System.Drawing.Point(213, 327)
+        Me.btnMetal.Location = New System.Drawing.Point(278, 327)
         Me.btnMetal.Name = "btnMetal"
-        Me.btnMetal.Size = New System.Drawing.Size(100, 28)
+        Me.btnMetal.Size = New System.Drawing.Size(127, 28)
         Me.btnMetal.TabIndex = 2
         Me.btnMetal.Text = "HEAVY METAL"
         '
-        'Button2
+        'btnUsr1
         '
-        Me.Button2.BackColor = System.Drawing.Color.FromArgb(CType(CType(37, Byte), Integer), CType(CType(37, Byte), Integer), CType(CType(41, Byte), Integer))
-        Me.Button2.Cursor = System.Windows.Forms.Cursors.Hand
-        Me.Button2.ForeColor = System.Drawing.Color.FromArgb(CType(CType(138, Byte), Integer), CType(CType(138, Byte), Integer), CType(CType(150, Byte), Integer))
-        Me.Button2.Location = New System.Drawing.Point(548, 327)
-        Me.Button2.Name = "Button2"
-        Me.Button2.Size = New System.Drawing.Size(31, 28)
-        Me.Button2.TabIndex = 8
-        Me.Button2.Text = "_"
+        Me.btnUsr1.BackColor = System.Drawing.Color.FromArgb(CType(CType(35, Byte), Integer), CType(CType(25, Byte), Integer), CType(CType(55, Byte), Integer))
+        Me.btnUsr1.Cursor = System.Windows.Forms.Cursors.Hand
+        Me.btnUsr1.ForeColor = System.Drawing.Color.FromArgb(CType(CType(160, Byte), Integer), CType(CType(130, Byte), Integer), CType(CType(220, Byte), Integer))
+        Me.btnUsr1.Location = New System.Drawing.Point(411, 327)
+        Me.btnUsr1.Name = "btnUsr1"
+        Me.btnUsr1.Size = New System.Drawing.Size(82, 28)
+        Me.btnUsr1.TabIndex = 12
+        Me.btnUsr1.Text = "USR 1"
         '
-        'Button1
+        'btnUsr2
         '
-        Me.Button1.BackColor = System.Drawing.Color.FromArgb(CType(CType(60, Byte), Integer), CType(CType(20, Byte), Integer), CType(CType(25, Byte), Integer))
-        Me.Button1.Cursor = System.Windows.Forms.Cursors.Hand
-        Me.Button1.ForeColor = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(71, Byte), Integer), CType(CType(87, Byte), Integer))
-        Me.Button1.Location = New System.Drawing.Point(578, 327)
-        Me.Button1.Name = "Button1"
-        Me.Button1.Size = New System.Drawing.Size(31, 28)
-        Me.Button1.TabIndex = 7
-        Me.Button1.Text = "X"
+        Me.btnUsr2.BackColor = System.Drawing.Color.FromArgb(CType(CType(35, Byte), Integer), CType(CType(25, Byte), Integer), CType(CType(55, Byte), Integer))
+        Me.btnUsr2.Cursor = System.Windows.Forms.Cursors.Hand
+        Me.btnUsr2.ForeColor = System.Drawing.Color.FromArgb(CType(CType(160, Byte), Integer), CType(CType(130, Byte), Integer), CType(CType(220, Byte), Integer))
+        Me.btnUsr2.Location = New System.Drawing.Point(497, 327)
+        Me.btnUsr2.Name = "btnUsr2"
+        Me.btnUsr2.Size = New System.Drawing.Size(82, 28)
+        Me.btnUsr2.TabIndex = 13
+        Me.btnUsr2.Text = "USR 2"
         '
-        'ToolStripContainer1
+        'btnUsr3
         '
-        Me.ToolStripContainer1.BottomToolStripPanelVisible = False
-        '
-        'ToolStripContainer1.ContentPanel
-        '
-        Me.ToolStripContainer1.ContentPanel.AutoScroll = True
-        Me.ToolStripContainer1.ContentPanel.Controls.Add(Me.Label3)
-        Me.ToolStripContainer1.ContentPanel.Controls.Add(Me.Button2)
-        Me.ToolStripContainer1.ContentPanel.Controls.Add(Me.pnlMain)
-        Me.ToolStripContainer1.ContentPanel.Controls.Add(Me.Button1)
-        Me.ToolStripContainer1.ContentPanel.Controls.Add(Me.btnRec)
-        Me.ToolStripContainer1.ContentPanel.Controls.Add(Me.btnClean)
-        Me.ToolStripContainer1.ContentPanel.Controls.Add(Me.btnCrunch)
-        Me.ToolStripContainer1.ContentPanel.Controls.Add(Me.btnMetal)
-        Me.ToolStripContainer1.ContentPanel.Size = New System.Drawing.Size(623, 365)
-        Me.ToolStripContainer1.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.ToolStripContainer1.LeftToolStripPanelVisible = False
-        Me.ToolStripContainer1.Location = New System.Drawing.Point(0, 0)
-        Me.ToolStripContainer1.Name = "ToolStripContainer1"
-        Me.ToolStripContainer1.RightToolStripPanelVisible = False
-        Me.ToolStripContainer1.Size = New System.Drawing.Size(623, 365)
-        Me.ToolStripContainer1.TabIndex = 1
-        Me.ToolStripContainer1.Text = "ToolStripContainer1"
-        Me.ToolStripContainer1.TopToolStripPanelVisible = False
-        '
-        'Label3
-        '
-        Me.Label3.AutoSize = True
-        Me.Label3.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label3.ForeColor = System.Drawing.Color.FromArgb(CType(CType(138, Byte), Integer), CType(CType(138, Byte), Integer), CType(CType(150, Byte), Integer))
-        Me.Label3.Location = New System.Drawing.Point(391, 333)
-        Me.Label3.Name = "Label3"
-        Me.Label3.Size = New System.Drawing.Size(75, 19)
-        Me.Label3.TabIndex = 9
-        Me.Label3.Text = "REC: 00:00"
+        Me.btnUsr3.BackColor = System.Drawing.Color.FromArgb(CType(CType(35, Byte), Integer), CType(CType(25, Byte), Integer), CType(CType(55, Byte), Integer))
+        Me.btnUsr3.Cursor = System.Windows.Forms.Cursors.Hand
+        Me.btnUsr3.ForeColor = System.Drawing.Color.FromArgb(CType(CType(160, Byte), Integer), CType(CType(130, Byte), Integer), CType(CType(220, Byte), Integer))
+        Me.btnUsr3.Location = New System.Drawing.Point(583, 327)
+        Me.btnUsr3.Name = "btnUsr3"
+        Me.btnUsr3.Size = New System.Drawing.Size(82, 28)
+        Me.btnUsr3.TabIndex = 14
+        Me.btnUsr3.Text = "USR 3"
         '
         'Timer1
         '
@@ -413,7 +536,7 @@ Partial Class Form1
         'Form1
         '
         Me.BackColor = System.Drawing.Color.FromArgb(CType(CType(13, Byte), Integer), CType(CType(13, Byte), Integer), CType(CType(13, Byte), Integer))
-        Me.ClientSize = New System.Drawing.Size(623, 365)
+        Me.ClientSize = New System.Drawing.Size(918, 365)
         Me.ControlBox = False
         Me.Controls.Add(Me.ToolStripContainer1)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None
@@ -424,13 +547,14 @@ Partial Class Form1
         Me.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
         Me.TopMost = True
-        CType(Me.picVuMeter, System.ComponentModel.ISupportInitialize).EndInit()
-        Me.pnlMain.ResumeLayout(False)
-        Me.pnlMain.PerformLayout()
         Me.ToolStripContainer1.ContentPanel.ResumeLayout(False)
         Me.ToolStripContainer1.ContentPanel.PerformLayout()
         Me.ToolStripContainer1.ResumeLayout(False)
         Me.ToolStripContainer1.PerformLayout()
+        Me.pnlMain.ResumeLayout(False)
+        Me.pnlMain.PerformLayout()
+        Me.pnlFX.ResumeLayout(False)
+        CType(Me.picVuMeter, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
 
     End Sub
@@ -458,9 +582,19 @@ Partial Class Form1
     Friend WithEvents swCabSim As Global.NeurAmpli.RockSwitch
     Friend WithEvents swExclusive As Global.NeurAmpli.RockSwitch
 
+    ' FX Tweaker Panel (design-time)
+    Friend WithEvents pnlFX As NeurAmpli.GlassPanel
+    Friend WithEvents lblFXTitle As System.Windows.Forms.Label
+    Friend WithEvents knobFX1 As Global.NeurAmpli.RockKnob
+    Friend WithEvents knobFX2 As Global.NeurAmpli.RockKnob
+    Friend WithEvents knobFX3 As Global.NeurAmpli.RockKnob
+
     Friend WithEvents btnMetal As NeurAmpli.ModernButton
     Friend WithEvents btnCrunch As NeurAmpli.ModernButton
     Friend WithEvents btnClean As NeurAmpli.ModernButton
+    Friend WithEvents btnUsr1 As NeurAmpli.ModernButton
+    Friend WithEvents btnUsr2 As NeurAmpli.ModernButton
+    Friend WithEvents btnUsr3 As NeurAmpli.ModernButton
     Friend WithEvents tmrVisuals As System.Windows.Forms.Timer
     Friend WithEvents Button1 As NeurAmpli.ModernButton
     Friend WithEvents Button2 As NeurAmpli.ModernButton
