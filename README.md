@@ -2,14 +2,6 @@
 
 **NeurAmpli** is a minimal & powerful virtual guitar amplifier (Amp Simulator) written natively in VB.NET. By pushing the **NAudio** architecture to its limits, it transforms a dry input signal from your audio interface into a compact, saturated, and musically rich even-harmonic tube tone with near-zero latency.
 
-### v2.5.3 (High-Fidelity Audio & User Presets Update)
-The entire DSP suite, User Interface, and Audio Engine have been completely overhauled. 
-- Introduces **3 Custom User Preset Slots (USR 1, USR 2, USR 3)** on the main panel. Right-click to save your exact knob/effect state; left-click to instantly load it.
-- **True 24-bit PCM Capture**: The audio engine now fully utilizes the 24-bit headroom of modern audio interfaces, gaining 48dB of dynamic range compared to standard 16-bit capture.
-- Introduces the **Dynamic FX Tweaker Rack**, a smart side-panel that reveals granular DSP controls (Chorus Rate/Depth, Delay Feedback/Mix, Comp Ratio/Threshold) when clicking an effect's name.
-- Custom vector-rendered Flat/Neumorphic Glass Panels and Knobs.
-- A **Safety Master Soft-Knee Limiter** cleanly preserves dynamics below 0.9 and smoothly soft-clips extreme transient peaks, preventing digital clipping without altering the clean tone.
-
 <img width="918" height="365" alt="253" src="https://github.com/user-attachments/assets/d41367ba-0cfc-4917-b810-b778fbb5e847" />
 
 ## 🌟 Key Features & Strengths
