@@ -13,11 +13,11 @@
 - **🔥 Asymmetric Tube Simulation with 2x Oversampling:** The distortion (Drive) stage doesn't rely on artificial symmetric clipping. A **Parametric DC Tube Bias offset** is applied within the `Math.Tanh` transfer function. It's now heavily upgraded with **internal 2x Oversampling** (anti-imaging and anti-aliasing filters) to perfectly emulate the color and warmth of true thermionic vacuum tubes without generating high-frequency digital "fizz" artifacts.
   
 - **🔊 6-Stage Advanced Cabinet Simulator:** Instead of a basic low-pass filter, the Cab Sim algorithm mimics the acoustic mass and air movement of a large 4x12 Studio Cabinet using cascaded `BiQuadFilter` instances:
-  - **70Hz HPF:** Removes subsonic "boom" for a tight low-end.
-  - **90Hz Peaking EQ:** Simulates the resonant body of a large closed-back wood cabinet.
-  - **4.2kHz Cascade LPF:** Cuts the harsh top end.
+  - **75Hz HPF:** Removes subsonic "boom" for a tight low-end.
+  - **100Hz Peaking EQ:** Simulates the resonant body of a large closed-back wood cabinet.
+  - **4.8kHz Cascade LPF:** Cuts the harsh top end while letting the tone breathe.
   - **3.5kHz Presence Notch:** Beautifully captures the distinct mid-scoop of guitar speaker cones.
-  - **5.5kHz Rolloff:** Ensures a natural smooth fade-out matching real microphones off-axis.
+  - **6.0kHz Rolloff:** Ensures a natural smooth fade-out matching real microphones off-axis.
     
 - **🎛️ Comprehensive DSP FX Chain (With Dynamic Tweaker Rack):** ALL effects are meticulously calculated to be completely **Sample-Rate Independent**.
   - **Soft-Knee Noise Gate** (Exponential dial curve, time constants auto-scaling with sample rate).

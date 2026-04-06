@@ -223,17 +223,20 @@ Public Class Form1
             audioInput = New WaveInEvent()
             audioInput.DeviceNumber = cmbInput.SelectedIndex
             audioInput.WaveFormat = New WaveFormat(192000, 24, 1)
-            ' Ripristino buffer a 20ms (Sicurezza contro starvation di I/O MME di Windows)
             audioInput.BufferMilliseconds = 20
             audioInput.NumberOfBuffers = 3
             
-            ' ReadFully = True è CRITICO per WasapiOut Exclusive, altrimenti alla prima carenza di dati lo stream muore in un Muta permanente.
-            bufferedProvider = New BufferedWaveProvider(audioInput.WaveFormat) With {.DiscardOnBufferOverflow = True, .ReadFully = True}
+            ' ReadFully = True è CRITICO per WasapiOut, altrimenti lo stream muore.
+            ' BufferDuration limita la latenza massima; DiscardOnBufferOverflow gestisce l'overflow
+            ' senza distruggere il buffer (NO ClearBuffer che causava click/pop/note sovrapposte).
+            bufferedProvider = New BufferedWaveProvider(audioInput.WaveFormat) With {
+                .DiscardOnBufferOverflow = True,
+                .ReadFully = True,
+                .BufferDuration = TimeSpan.FromMilliseconds(50)
+            }
 
             AddHandler audioInput.DataAvailable, Sub(s, a)
                                                      bufferedProvider.AddSamples(a.Buffer, 0, a.BytesRecorded)
-                                                     ' La soglia di reset deve essere > della dimensione del pacchetto (20ms * 2 = 40ms)
-                                                     If bufferedProvider.BufferedDuration.TotalMilliseconds > 40 Then bufferedProvider.ClearBuffer()
                                                  End Sub
 
             guitarEffect = New GuitarAmpEffect(bufferedProvider.ToSampleProvider())
@@ -282,9 +285,10 @@ Public Class Form1
     Private Sub ApplySettings()
         If guitarEffect Is Nothing Then Return
 
+        ' Input Gain: boost per pickup passivi (Ibanez GSA60, ecc.)
+        guitarEffect.InputGain = 3.0F
+
         ' Gate Esponenziale Bilanciato.
-        ' 1 = 0.0005 (estremamente fine)
-        ' 20 = 0.2 (massimo originale)
         Dim gateVal = CSng(knobGate.Value)
         guitarEffect.GateThreshold = (gateVal * gateVal) / 2000.0F
         
