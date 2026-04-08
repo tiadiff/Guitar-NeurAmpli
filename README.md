@@ -51,7 +51,7 @@
 ## 🛠️ Built With
 - **Visual Studio / VB.NET**
 - **NAudio API** (`WasapiOut`, `WaveInEvent`, DSP `BiQuadFilter`, `BufferedWaveProvider`)
-- **Win32 API Integrations** (User32.dll) for borderless window dragging events.
+- **Win32 API Integrations** (User32.dll) for borderless window dragging events. <br><br>
 
 ## 📝 License
 MIT License - Open Source Educational/Musical Project. Feel free to use these DSP functions as a foundation to build more complex VSTs or standalone pedalboards.
