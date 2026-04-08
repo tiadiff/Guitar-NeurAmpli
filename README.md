@@ -47,7 +47,6 @@
 3. Feel free to tweak the Gain, EQ, or play with the built-in Presets (`Crunch`, `Heavy Metal`) in real-time!
 4. **Custom Presets:** Tweak your tone to perfection, right-click any `USR` slot to save, and left-click it later to instantly recall your setup.
 
-<br><br>
 ## 🛠️ Built With
 - **Visual Studio / VB.NET**
 - **NAudio API** (`WasapiOut`, `WaveInEvent`, DSP `BiQuadFilter`, `BufferedWaveProvider`)
