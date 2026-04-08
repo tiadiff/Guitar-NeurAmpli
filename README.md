@@ -9,6 +9,8 @@
 ## 🌟 Key Features & Strengths
 
 - **⚡ Dynamic WASAPI Engine (Exclusive/Shared):** A dedicated UI toggle allows you to seamlessly switch between **Exclusive Mode** (completely bypassing the Windows native mixer for microscopic 10ms output buffers and maximum real-time responsiveness) and **Shared Mode** (perfect for practicing over YouTube backing tracks or Spotify with ~15ms latency). The stream gracefully auto-restarts upon switching without breaking the UI.
+
+<img width="2816" height="1536" alt="Gemini_Generated_Image_iimzd8iimzd8iimz" src="https://github.com/user-attachments/assets/b74857b9-907a-434d-ad38-9d26db685d07" />
   
 - **📈 192kHz Implicit Oversampling:** Internal DSP engine tested to run natively at `192,000Hz`. Operating at this extreme frequency not only offers crystalline precision but naturally prevents catastrophic digital aliasing ("fizz") when generating extreme high-gain distortion.
   
@@ -28,6 +30,8 @@
   - **Dark Analog Tape Delay** (Low-pass filtered feedback loop for a degrading BBD tone).
   - **8-Tap Diffusion Reverb** upgraded with High-Frequency Damping to absorb treble in the tail, simulating real acoustic rooms/springs.
   - **LFO Tremolo** (Adjustable `Rate` and `Depth`).
+ 
+<img width="2816" height="1536" alt="Gemini_Generated_Image_4blc6e4blc6e4blc" src="https://github.com/user-attachments/assets/2d1c30a8-e383-4e64-9879-cf0eebc70ff5" />
     
 - **💾 Thread-Safe WAV Recording:** A dedicated button allows for surgical high-resolution recording (wet loop) by asynchronously dumping massive buffer *chunks* in the background. It utilizes strict `SyncLock` synchronization to guarantee thread-safe stability without audio dropouts or memory leaks.
   
