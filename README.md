@@ -9,12 +9,14 @@
 ## 🌟 Key Features & Strengths
 
 - **⚡ Dynamic WASAPI Engine (Exclusive/Shared):** A dedicated UI toggle allows you to seamlessly switch between **Exclusive Mode** (completely bypassing the Windows native mixer for microscopic 10ms output buffers and maximum real-time responsiveness) and **Shared Mode** (perfect for practicing over YouTube backing tracks or Spotify with ~15ms latency). The stream gracefully auto-restarts upon switching without breaking the UI.
-
-<img width="2816" height="1536" alt="Gemini_Generated_Image_iimzd8iimzd8iimz" src="https://github.com/user-attachments/assets/b74857b9-907a-434d-ad38-9d26db685d07" />
   
 - **📈 192kHz Implicit Oversampling:** Internal DSP engine tested to run natively at `192,000Hz`. Operating at this extreme frequency not only offers crystalline precision but naturally prevents catastrophic digital aliasing ("fizz") when generating extreme high-gain distortion.
+
+<img width="2816" height="1536" alt="Gemini_Generated_Image_iimzd8iimzd8iimz" src="https://github.com/user-attachments/assets/d1cb87a6-1319-4d93-9915-37012ce7a2ec" />
   
 - **🔥 Asymmetric Tube Simulation with 2x Oversampling:** The distortion (Drive) stage doesn't rely on artificial symmetric clipping. A **Parametric DC Tube Bias offset** is applied within the `Math.Tanh` transfer function. It's now heavily upgraded with **internal 2x Oversampling** (anti-imaging and anti-aliasing filters) to perfectly emulate the color and warmth of true thermionic vacuum tubes without generating high-frequency digital "fizz" artifacts.
+
+<img width="2816" height="1536" alt="Gemini_Generated_Image_4blc6e4blc6e4blc" src="https://github.com/user-attachments/assets/c7de3462-c063-402b-aeed-8eba1913f742" />
   
 - **🔊 6-Stage Advanced Cabinet Simulator:** Instead of a basic low-pass filter, the Cab Sim algorithm mimics the acoustic mass and air movement of a large 4x12 Studio Cabinet using cascaded `BiQuadFilter` instances:
   - **75Hz HPF:** Removes subsonic "boom" for a tight low-end.
@@ -31,7 +33,7 @@
   - **8-Tap Diffusion Reverb** upgraded with High-Frequency Damping to absorb treble in the tail, simulating real acoustic rooms/springs.
   - **LFO Tremolo** (Adjustable `Rate` and `Depth`).
  
-<img width="2816" height="1536" alt="Gemini_Generated_Image_4blc6e4blc6e4blc" src="https://github.com/user-attachments/assets/2d1c30a8-e383-4e64-9879-cf0eebc70ff5" />
+<img width="2816" height="1536" alt="Gemini_Generated_Image_hmv2qmhmv2qmhmv2" src="https://github.com/user-attachments/assets/f4bb6e06-c606-4968-a1be-91518401446f" />
     
 - **💾 Thread-Safe WAV Recording:** A dedicated button allows for surgical high-resolution recording (wet loop) by asynchronously dumping massive buffer *chunks* in the background. It utilizes strict `SyncLock` synchronization to guarantee thread-safe stability without audio dropouts or memory leaks.
   
