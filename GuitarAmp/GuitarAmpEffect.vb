@@ -87,11 +87,32 @@ Public Class GuitarAmpEffect
     Private tapeFilterSample As Single = 0.0F
     Private reverbDampSample As Single = 0.0F
 
+    ' --- GATE SILENCE TRACKING ---
+    ' Quando il gate è chiuso per più di GATE_FLUSH_SAMPLES, resetta tutti i filtri
+    ' per prevenire l'accumulo di errori numerici float32 nei registri z1/z2 dei BiQuad
+    ' (a 192kHz i coefficienti sono vicini a 1.0 → drift numerico → rumore fantasma)
+    Private gateClosedCounter As Integer = 0
+    Private Const GATE_FLUSH_SAMPLES As Integer = 19200  ' 100ms @ 192kHz
+
+    ' --- FADE-IN ANTI-POP ---
+    Private fadeInCounter As Integer = 0
+    Private Const FADE_IN_SAMPLES As Integer = 4096  ' ~21ms @ 192kHz
+
     Public Sub New(sourceProvider As ISampleProvider)
         source = sourceProvider
         delayBuffer = New Single(maxDelaySamples) {}
         reverbBuffer = New Single(maxDelaySamples) {}
         chorusBuffer = New Single(maxDelaySamples) {}
+        ' Azzera buffer e state DSP per evitare pop all'avvio
+        Array.Clear(delayBuffer, 0, delayBuffer.Length)
+        Array.Clear(reverbBuffer, 0, reverbBuffer.Length)
+        Array.Clear(chorusBuffer, 0, chorusBuffer.Length)
+        gateGain = 0.0F
+        compEnvelope = 0.0F
+        tapeFilterSample = 0.0F
+        reverbDampSample = 0.0F
+        gateClosedCounter = 0
+        fadeInCounter = 0
         UpdateFilters()
     End Sub
 
@@ -154,6 +175,16 @@ Public Class GuitarAmpEffect
         End SyncLock
     End Sub
 
+    ''' <summary>
+    ''' Flush denormali: i numeri subnormali float32 (sotto ~1.18e-38) causano
+    ''' CPU stall sui registri FPU, drift numerico nei filtri BiQuad, e
+    ''' accumulo di rumore fantasma. Clampa a zero.
+    ''' </summary>
+    Private Shared Function FlushDenormal(v As Single) As Single
+        If Math.Abs(v) < 1.0E-10F Then Return 0.0F
+        Return v
+    End Function
+
     Public Function Read(buffer As Single(), offset As Integer, count As Integer) As Integer Implements ISampleProvider.Read
         Dim samplesRead = source.Read(buffer, offset, count)
         Dim maxSample As Single = 0
@@ -181,28 +212,58 @@ Public Class GuitarAmpEffect
         For i As Integer = 0 To samplesRead - 1
             Dim sample = buffer(offset + i)
 
-            ' 0. INPUT CONDITIONING: HPF 30Hz + Pre-Amp Gain
+            ' 0. INPUT CONDITIONING: HPF 30Hz (rimuove DC offset)
             If inputHPF IsNot Nothing Then
                 sample = inputHPF.Transform(sample)
             End If
-            sample *= snapInputGain
 
-            Dim absSample = Math.Abs(sample)
-
-            ' 1. SOFT NOISE GATE (Rate-Independent)
-            Dim targetGate As Single = If(snapGate AndAlso absSample < GateThreshold, 0.0F, 1.0F)
+            ' 1. NOISE GATE — applicato PRIMA dell'InputGain
+            Dim absSampleRaw = Math.Abs(sample)
+            Dim targetGate As Single = If(snapGate AndAlso absSampleRaw < GateThreshold, 0.0F, 1.0F)
             Dim gateCoeff As Single = If(targetGate < gateGain, gateReleaseCoeff, gateAttackCoeff)
             gateGain += gateCoeff * (targetGate - gateGain)
-
-            sample *= gateGain
             GateActive = (gateGain < 0.1F)
 
-            ' 2. COMPRESSORE (Soft-Knee Peak Compressor, Rate-Independent)
+            ' === HARD GATE + DSP BYPASS ===
+            If gateGain < 0.001F Then
+                gateClosedCounter += 1
+
+                ' Dopo 100ms di silenzio: resetta TUTTI gli stati interni dei filtri
+                If gateClosedCounter = GATE_FLUSH_SAMPLES Then
+                    UpdateFilters()
+                    Array.Clear(delayBuffer, 0, delayBuffer.Length)
+                    Array.Clear(reverbBuffer, 0, reverbBuffer.Length)
+                    Array.Clear(chorusBuffer, 0, chorusBuffer.Length)
+                    tapeFilterSample = 0.0F
+                    reverbDampSample = 0.0F
+                    compEnvelope = 0.0F
+                End If
+
+                ' Output silenzio assoluto — skip di TUTTO il DSP
+                buffer(offset + i) = 0.0F
+                Continue For
+            Else
+                gateClosedCounter = 0
+            End If
+
+            ' Da qui in poi il segnale è "vivo" (gate aperto)
+            sample *= gateGain
+
+            ' 2. PRE-AMP GAIN
+            sample *= snapInputGain
+
+            ' FADE-IN ANTI-POP
+            If fadeInCounter < FADE_IN_SAMPLES Then
+                sample *= CSng(fadeInCounter) / CSng(FADE_IN_SAMPLES)
+                fadeInCounter += 1
+            End If
+
+            ' 3. COMPRESSORE (Soft-Knee Peak Compressor)
             If snapComp Then
                 Dim threshAbsolute = 1.0F - CompThreshold
-                If threshAbsolute < 0.01F Then threshAbsolute = 0.01F 
+                If threshAbsolute < 0.01F Then threshAbsolute = 0.01F
                 Dim diff = Math.Abs(sample) - threshAbsolute
-                
+
                 If diff > 0 Then
                     Dim targetG = 1.0F - (diff * (1.0F - (1.0F / CompRatio)))
                     compEnvelope += compAttackCoeff * (targetG - compEnvelope)
@@ -210,38 +271,35 @@ Public Class GuitarAmpEffect
                     compEnvelope += compReleaseCoeff * (1.0F - compEnvelope)
                 End If
                 If compEnvelope > 1.0F Then compEnvelope = 1.0F
-                
+
                 sample *= compEnvelope
                 sample *= 1.0F + (CompThreshold * 0.5F)
             End If
 
-            ' 3. ASYMMETRIC TUBE DRIVE con 2x Oversampling CORRETTO
+            ' 4. ASYMMETRIC TUBE DRIVE con 2x Oversampling
             If snapDrive > 0 Then
                 sample *= (1.0F + (snapDrive * 6.0F))
                 Dim tubeBias As Single = 0.25F * (snapDrive / 10.0F)
 
-                ' --- 2x OVERSAMPLING: 4 stadi filtro (24dB/oct), implementazione corretta ---
-                ' Upsample: zero-stuffing [sample*2, 0] → filtro anti-imaging a 2 stadi
                 Dim up1 = oversampleUpF2.Transform(oversampleUpF1.Transform(sample * 2.0F))
                 Dim up2 = oversampleUpF2.Transform(oversampleUpF1.Transform(0.0F))
 
-                ' Saturazione asimmetrica a rate doppio (entrambi i campioni oversampled)
                 Dim sat1 = CSng(Math.Tanh(up1 + tubeBias)) - CSng(Math.Tanh(tubeBias))
                 Dim sat2 = CSng(Math.Tanh(up2 + tubeBias)) - CSng(Math.Tanh(tubeBias))
 
-                ' Downsample: filtro anti-aliasing a 2 stadi → decimazione (primo campione)
                 Dim d1 = oversampleDownF2.Transform(oversampleDownF1.Transform(sat1))
-                oversampleDownF2.Transform(oversampleDownF1.Transform(sat2)) ' processa ma scarta
-                sample = d1 ' Prende il campione allineato al tempo originale
+                oversampleDownF2.Transform(oversampleDownF1.Transform(sat2))
+                sample = d1
 
-                ' Makeup gain ADATTIVO: preserva livello a basso drive, comprime ad alto gain
                 sample *= 0.6F + (0.4F / (1.0F + snapDrive * 0.3F))
             End If
 
-            ' 4. EQ & MULTI-STAGE CAB SIM
+            ' 5. EQ & CAB SIM + Denormal flush dopo i filtri
             If myFilters IsNot Nothing Then
                 For Each f In myFilters : sample = f.Transform(sample) : Next
             End If
+            sample = FlushDenormal(sample)
+
             If snapCabSim AndAlso cabSimFilter1 IsNot Nothing Then
                 sample = cabSimHPF.Transform(sample)
                 sample = cabResonance.Transform(sample)
@@ -249,21 +307,22 @@ Public Class GuitarAmpEffect
                 sample = cabSimFilter2.Transform(sample)
                 sample = cabPresenceDip.Transform(sample)
                 sample = cabRolloff.Transform(sample)
+                sample = FlushDenormal(sample)
             End If
 
-            ' 5. CHORUS (Interpolazione Cubica Hermite)
+            ' 6. CHORUS (Interpolazione Cubica Hermite)
             If snapChorus Then
                 Dim lfoHz = ChorusRate
                 Dim depthSamples = (ChorusDepth * 0.006F) * rate
                 Dim baseDelaySamples = 0.012F * rate
-                
+
                 chorusPhase += CSng((Math.PI * 2 * lfoHz) / rate)
                 If chorusPhase > CSng(Math.PI * 2) Then chorusPhase -= CSng(Math.PI * 2)
-                
+
                 Dim currentDelay = baseDelaySamples + (CSng(Math.Sin(chorusPhase)) * depthSamples)
                 Dim readPosDelay = chorusPos - currentDelay
                 If readPosDelay < 0 Then readPosDelay += maxDelaySamples
-                
+
                 Dim idx = CInt(Math.Floor(readPosDelay))
                 Dim frac As Single = readPosDelay - idx
                 Dim s0 = chorusBuffer((idx - 1 + maxDelaySamples) Mod maxDelaySamples)
@@ -279,11 +338,11 @@ Public Class GuitarAmpEffect
 
                 sample = (sample * (1.0F - (ChorusDepth * 0.5F))) + (chorusDelaySample * ChorusDepth)
             End If
-            
+
             chorusBuffer(chorusPos) = sample
             chorusPos = (chorusPos + 1) Mod maxDelaySamples
 
-            ' 6. TREMOLO
+            ' 7. TREMOLO
             If snapTremolo Then
                 Dim modFactor = 1.0F - (TremoloDepth * (0.5F + (0.5F * CSng(Math.Sin(tremoloPhase)))))
                 sample *= modFactor
@@ -291,7 +350,7 @@ Public Class GuitarAmpEffect
                 If tremoloPhase > Math.PI * 2 Then tremoloPhase -= CSng(Math.PI * 2)
             End If
 
-            ' 7. TAPE DELAY (Feedback filtrato)
+            ' 8. TAPE DELAY (feedback corretto)
             If snapDelay Then
                 Dim tMs = DelayTimeMs
                 If tMs < 10 Then tMs = 10
@@ -300,14 +359,16 @@ Public Class GuitarAmpEffect
 
                 Dim echo = delayBuffer(readPos)
                 tapeFilterSample += tapeLPFAlpha * (echo - tapeFilterSample)
+                Dim drySampleBeforeDelay = sample
                 sample += tapeFilterSample * DelayMix
-                delayBuffer(delayPos) = sample + (tapeFilterSample * DelayFeedback)
+                delayBuffer(delayPos) = drySampleBeforeDelay + (tapeFilterSample * DelayFeedback)
             Else
                 delayBuffer(delayPos) = sample
             End If
             delayPos = (delayPos + 1) Mod maxDelaySamples
 
-            ' 8. REVERB (8-Tap Diffusion con HF damping)
+            ' 9. REVERB (feedback corretto — scrive segnale pre-reverb)
+            Dim drySampleBeforeReverb = sample
             If snapReverb Then
                 Dim r1 = reverbBuffer((reverbPos - CInt(rate * 0.0137F) + maxDelaySamples) Mod maxDelaySamples)
                 Dim r2 = reverbBuffer((reverbPos - CInt(rate * 0.0227F) + maxDelaySamples) Mod maxDelaySamples)
@@ -325,8 +386,7 @@ Public Class GuitarAmpEffect
                 sample += revSignal * ReverbMix
 
                 Dim dampAlpha As Single = CSng(1.0 - Math.Exp(-2.0 * Math.PI * 4000.0 / rate))
-                reverbDampSample += dampAlpha * (sample - reverbDampSample)
-
+                reverbDampSample += dampAlpha * (drySampleBeforeReverb - reverbDampSample)
                 reverbBuffer(reverbPos) = reverbDampSample * ReverbDecay
             Else
                 reverbBuffer(reverbPos) = sample * 0.5F
@@ -336,10 +396,11 @@ Public Class GuitarAmpEffect
             ' MASTER
             sample *= snapVolume
 
-            ' OUTPUT ANTI-ALIAS FILTER (LP 20kHz)
+            ' OUTPUT ANTI-ALIAS FILTER + denormal flush
             If outputAAFilter IsNot Nothing Then
                 sample = outputAAFilter.Transform(sample)
             End If
+            sample = FlushDenormal(sample)
 
             ' MASTER LIMITER (Soft-Knee)
             Dim absOut = Math.Abs(sample)
@@ -349,10 +410,11 @@ Public Class GuitarAmpEffect
                 sample = Math.Sign(sample) * compressed
             End If
 
-            ' Safety Anti-NaN / Anti-Infinity
+            ' Safety Anti-NaN / Anti-Infinity + Denormal Flush finale
             If Single.IsNaN(sample) OrElse Single.IsInfinity(sample) Then sample = 0.0F
             If sample > 1.0F Then sample = 1.0F
             If sample < -1.0F Then sample = -1.0F
+            If Math.Abs(sample) < 1.0E-10F Then sample = 0.0F
 
             If Math.Abs(sample) > maxSample Then maxSample = Math.Abs(sample)
             buffer(offset + i) = sample

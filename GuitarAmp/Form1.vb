@@ -288,9 +288,12 @@ Public Class Form1
         ' Input Gain: boost per pickup passivi (Ibanez GSA60, ecc.)
         guitarEffect.InputGain = 3.0F
 
-        ' Gate Esponenziale Bilanciato.
+        ' Gate Esponenziale Bilanciato (con soglia minima per eliminare il noise floor).
+        ' Anche a knob=0, il gate mantiene una soglia minima per sopprimere il rumore
+        ' della scheda audio integrata (Realtek, ecc.) quando non si suona.
         Dim gateVal = CSng(knobGate.Value)
-        guitarEffect.GateThreshold = (gateVal * gateVal) / 2000.0F
+        Dim gateMin As Single = 0.005F   ' ~-46dB: sopprime il noise floor della scheda audio
+        guitarEffect.GateThreshold = Math.Max(gateMin, (gateVal * gateVal) / 2000.0F)
         
         guitarEffect.Volume = CSng(knobVol.Value) / 10.0F
         guitarEffect.Drive = CSng(knobDrive.Value)

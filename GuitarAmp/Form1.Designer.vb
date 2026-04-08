@@ -19,7 +19,6 @@ Partial Class Form1
         Me.tmrVisuals = New System.Windows.Forms.Timer(Me.components)
         Me.ToolStripContainer1 = New System.Windows.Forms.ToolStripContainer()
         Me.Label3 = New System.Windows.Forms.Label()
-        Me.Timer1 = New System.Windows.Forms.Timer(Me.components)
         Me.Button2 = New NeurAmpli.ModernButton()
         Me.pnlMain = New NeurAmpli.GlassPanel()
         Me.pnlFX = New NeurAmpli.GlassPanel()
@@ -54,6 +53,7 @@ Partial Class Form1
         Me.btnUsr1 = New NeurAmpli.ModernButton()
         Me.btnUsr2 = New NeurAmpli.ModernButton()
         Me.btnUsr3 = New NeurAmpli.ModernButton()
+        Me.Timer1 = New System.Windows.Forms.Timer(Me.components)
         Me.ToolStripContainer1.ContentPanel.SuspendLayout()
         Me.ToolStripContainer1.SuspendLayout()
         Me.pnlMain.SuspendLayout()
@@ -106,10 +106,6 @@ Partial Class Form1
         Me.Label3.Size = New System.Drawing.Size(75, 19)
         Me.Label3.TabIndex = 9
         Me.Label3.Text = "REC: 00:00"
-        '
-        'Timer1
-        '
-        Me.Timer1.Interval = 1000
         '
         'Button2
         '
@@ -420,7 +416,7 @@ Partial Class Form1
         Me.Label2.Name = "Label2"
         Me.Label2.Size = New System.Drawing.Size(37, 15)
         Me.Label2.TabIndex = 10
-        Me.Label2.Text = "v2.6.0"
+        Me.Label2.Text = "v2.6.2"
         '
         'Label1
         '
@@ -532,6 +528,10 @@ Partial Class Form1
         Me.btnUsr3.Size = New System.Drawing.Size(82, 28)
         Me.btnUsr3.TabIndex = 14
         Me.btnUsr3.Text = "USR 3"
+        '
+        'Timer1
+        '
+        Me.Timer1.Interval = 1000
         '
         'Form1
         '
