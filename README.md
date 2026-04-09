@@ -5,6 +5,8 @@
 **NeurAmpli** is a minimal & powerful virtual guitar amplifier (Amp Simulator) written natively in VB.NET. By pushing the **NAudio** architecture to its limits, it transforms a dry input signal from your audio interface into a compact, saturated, and musically rich even-harmonic tube tone with near-zero latency.
 
 <img width="918" height="365" alt="253" src="https://github.com/user-attachments/assets/d41367ba-0cfc-4917-b810-b778fbb5e847" /><br><br>
+<img width="1763" height="832" alt="Screenshot 2026-04-09 141705" src="https://github.com/user-attachments/assets/5d9dacbd-ae5d-4efd-9dba-90dedbb025b6" />
+
 
 ## 🌟 Key Features & Strengths
 
@@ -12,11 +14,7 @@
   
 - **📈 192kHz Implicit Oversampling:** Internal DSP engine tested to run natively at `192,000Hz`. Operating at this extreme frequency not only offers crystalline precision but naturally prevents catastrophic digital aliasing ("fizz") when generating extreme high-gain distortion. <br><br>
 
-<img width="2816" height="1536" alt="Gemini_Generated_Image_iimzd8iimzd8iimz" src="https://github.com/user-attachments/assets/d1cb87a6-1319-4d93-9915-37012ce7a2ec" /> <br><br>
-  
 - **🔥 Asymmetric Tube Simulation with 2x Oversampling:** The distortion (Drive) stage doesn't rely on artificial symmetric clipping. A **Parametric DC Tube Bias offset** is applied within the `Math.Tanh` transfer function. It's now heavily upgraded with **internal 2x Oversampling** (anti-imaging and anti-aliasing filters) to perfectly emulate the color and warmth of true thermionic vacuum tubes without generating high-frequency digital "fizz" artifacts. <br><br>
-
-<img width="2816" height="1536" alt="Gemini_Generated_Image_4blc6e4blc6e4blc" src="https://github.com/user-attachments/assets/c7de3462-c063-402b-aeed-8eba1913f742" /> <br><br>
   
 - **🔊 6-Stage Advanced Cabinet Simulator:** Instead of a basic low-pass filter, the Cab Sim algorithm mimics the acoustic mass and air movement of a large 4x12 Studio Cabinet using cascaded `BiQuadFilter` instances:
   - **75Hz HPF:** Removes subsonic "boom" for a tight low-end.
@@ -32,9 +30,6 @@
   - **Dark Analog Tape Delay** (Low-pass filtered feedback loop for a degrading BBD tone).
   - **8-Tap Diffusion Reverb** upgraded with High-Frequency Damping to absorb treble in the tail, simulating real acoustic rooms/springs.
   - **LFO Tremolo** (Adjustable `Rate` and `Depth`).
- 
-<br><br>
-<img width="2816" height="1536" alt="Gemini_Generated_Image_hmv2qmhmv2qmhmv2" src="https://github.com/user-attachments/assets/f4bb6e06-c606-4968-a1be-91518401446f" /><br><br>
 
 - **💾 Thread-Safe WAV Recording:** A dedicated button allows for surgical high-resolution recording (wet loop) by asynchronously dumping massive buffer *chunks* in the background. It utilizes strict `SyncLock` synchronization to guarantee thread-safe stability without audio dropouts or memory leaks.
 - **⛓️ Drag & Drop Signal Chain:** Reorder your pedals on the fly. The engine dynamically rewrites the audio processing loop to accommodate any configuration (e.g., Delay before or after Drive).
@@ -44,6 +39,10 @@
 - **🗃️ Studio Rack UI:** Automatic form positioning logic that "docks" the Looper, Metronome, Tuner, and Backing Track around the main amplifier, ensuring perfect visibility on 1080p monitors.
 
 - **🎨 Fluid UI:** Integrated fast-presets, a responsive hardware-style VUMeter with peak-hold, and real-time Noise Gate status via a dedicated LED indicator.
+
+<img width="2816" height="1536" alt="Gemini_Generated_Image_iimzd8iimzd8iimz" src="https://github.com/user-attachments/assets/d1cb87a6-1319-4d93-9915-37012ce7a2ec" />
+<img width="2816" height="1536" alt="Gemini_Generated_Image_4blc6e4blc6e4blc" src="https://github.com/user-attachments/assets/c7de3462-c063-402b-aeed-8eba1913f742" /> 
+<img width="2816" height="1536" alt="Gemini_Generated_Image_hmv2qmhmv2qmhmv2" src="https://github.com/user-attachments/assets/f4bb6e06-c606-4968-a1be-91518401446f" />
 
 ## 🚀 Quick Start / Usage
 1. Select the hardware input receiving your guitar from the dropdown menu.
