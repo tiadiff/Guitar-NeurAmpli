@@ -77,6 +77,53 @@ Public Class GuitarAmpEffect
     Public Property ReverbMix As Single = 0.35F
     Public Property ReverbDecay As Single = 0.75F
 
+    ' --- METRONOME ---
+    Public Property MetronomeEnabled As Boolean = False
+    Public Property MetronomeBPM As Single = 120.0F
+    Public Property MetronomeVolume As Single = 0.5F
+
+    ' --- LOOPER ---
+    Public Enum LooperStates
+        Stopped = 0
+        Recording = 1
+        Playing = 2
+    End Enum
+    Public Property LooperState As LooperStates = LooperStates.Stopped
+    Public Property LooperVolume As Single = 0.5F
+
+    Private Const MAX_LOOPER_SAMPLES As Integer = 192000 * 120 ' 120 seconds max
+    Private looperBuffer() As Single
+    Public looperLength As Integer = 0
+    Public currentLooperPos As Integer = 0
+
+    Public ReadOnly Property LooperProgress As Single
+        Get
+            If looperLength <= 0 Then Return 0.0F
+            Return CSng(currentLooperPos) / CSng(looperLength)
+        End Get
+    End Property
+
+    ' --- SIGNAL CHAIN ---
+    Public Enum FXType
+        Compressor = 0
+        Drive = 1
+        AmpCab = 2
+        Chorus = 3
+        Tremolo = 4
+        Delay = 5
+        Reverb = 6
+    End Enum
+
+    Public SignalChain() As FXType = {
+        FXType.Compressor,
+        FXType.Drive,
+        FXType.AmpCab,
+        FXType.Chorus,
+        FXType.Tremolo,
+        FXType.Delay,
+        FXType.Reverb
+    }
+
     ' VARIABILI STATO
     Private tremoloPhase As Single = 0.0F
     Private chorusPhase As Single = 0.0F
@@ -86,6 +133,12 @@ Public Class GuitarAmpEffect
     Private compEnvelope As Single = 0.0F
     Private tapeFilterSample As Single = 0.0F
     Private reverbDampSample As Single = 0.0F
+
+    ' --- METRONOME STATE ---
+    Private metronomeSampleCounter As Integer = 0
+    Private metronomeBeatCount As Integer = 0
+    Private metronomePhase As Single = 0.0F
+    Private metronomeEnv As Single = 0.0F
 
     ' --- GATE SILENCE TRACKING ---
     ' Quando il gate è chiuso per più di GATE_FLUSH_SAMPLES, resetta tutti i filtri
@@ -102,7 +155,9 @@ Public Class GuitarAmpEffect
         source = sourceProvider
         delayBuffer = New Single(maxDelaySamples) {}
         reverbBuffer = New Single(maxDelaySamples) {}
-        chorusBuffer = New Single(maxDelaySamples) {}
+        chorusBuffer = New Single(maxDelaySamples - 1) {}
+        ReDim looperBuffer(MAX_LOOPER_SAMPLES - 1)
+        
         ' Azzera buffer e state DSP per evitare pop all'avvio
         Array.Clear(delayBuffer, 0, delayBuffer.Length)
         Array.Clear(reverbBuffer, 0, reverbBuffer.Length)
@@ -113,7 +168,22 @@ Public Class GuitarAmpEffect
         reverbDampSample = 0.0F
         gateClosedCounter = 0
         fadeInCounter = 0
+        metronomeSampleCounter = 0
+        metronomeBeatCount = 0
+        MetronomeBPM = 120.0F
+        MetronomeVolume = 0.5F
+        
+        ClearLooper()
         UpdateFilters()
+    End Sub
+
+    Public Sub ClearLooper()
+        looperLength = 0
+        currentLooperPos = 0
+        LooperState = LooperStates.Stopped
+        If looperBuffer IsNot Nothing Then
+            Array.Clear(looperBuffer, 0, looperBuffer.Length)
+        End If
     End Sub
 
     Public ReadOnly Property WaveFormat As WaveFormat Implements ISampleProvider.WaveFormat
@@ -201,6 +271,9 @@ Public Class GuitarAmpEffect
         Dim snapReverb = ReverbEnabled
         Dim snapVolume = Volume
         Dim snapInputGain = InputGain
+        Dim snapMetronomeEnabled = MetronomeEnabled
+        Dim snapMetronomeBPM = MetronomeBPM
+        Dim snapMetronomeVol = MetronomeVolume
 
         ' --- Coefficienti DSP Dipendenti dal Sample Rate ---
         Dim gateAttackCoeff As Single = CSng(1.0 - Math.Exp(-1.0 / (rate * 0.002)))
@@ -209,8 +282,35 @@ Public Class GuitarAmpEffect
         Dim compReleaseCoeff As Single = CSng(1.0 - Math.Exp(-1.0 / (rate * 0.050)))
         Dim tapeLPFAlpha As Single = CSng(1.0 - Math.Exp(-2.0 * Math.PI * 3500.0 / rate))
 
+        Dim snapChain(6) As FXType
+        Array.Copy(SignalChain, snapChain, 7)
+
         For i As Integer = 0 To samplesRead - 1
             Dim sample = buffer(offset + i)
+            Dim metroSample As Single = 0.0F
+
+            ' 0. METRONOMO
+            If snapMetronomeEnabled AndAlso snapMetronomeBPM > 0 Then
+                Dim samplesPerBeat = rate * 60.0F / snapMetronomeBPM
+                metronomeSampleCounter += 1
+                If metronomeSampleCounter >= samplesPerBeat Then
+                    metronomeSampleCounter -= CInt(samplesPerBeat)
+                    metronomeBeatCount = (metronomeBeatCount + 1) Mod 4
+                    metronomeEnv = 1.0F
+                    metronomePhase = 0.0F
+                End If
+
+                If metronomeEnv > 0 Then
+                    Dim freq As Single = If(metronomeBeatCount = 1, 1500.0F, 800.0F) ' Beat 1 has a higher pitch
+                    metronomePhase += CSng(freq * Math.PI * 2 / rate)
+                    If metronomePhase > CSng(Math.PI * 2) Then metronomePhase -= CSng(Math.PI * 2)
+                    
+                    metroSample = CSng(Math.Sin(metronomePhase)) * metronomeEnv * snapMetronomeVol * 0.7F
+
+                    metronomeEnv *= CSng(Math.Exp(-1.0 / (rate * 0.015))) ' 15ms decay const
+                    If metronomeEnv < 0.001F Then metronomeEnv = 0.0F
+                End If
+            End If
 
             ' 0. INPUT CONDITIONING: HPF 30Hz (rimuove DC offset)
             If inputHPF IsNot Nothing Then
@@ -239,9 +339,9 @@ Public Class GuitarAmpEffect
                     compEnvelope = 0.0F
                 End If
 
-                ' Output silenzio assoluto — skip di TUTTO il DSP
-                buffer(offset + i) = 0.0F
-                Continue For
+                ' L'output chitarra è muto. Passiamo direttamente ai mix esterni.
+                sample = 0.0F
+                GoTo MixExternal
             Else
                 gateClosedCounter = 0
             End If
@@ -258,149 +358,156 @@ Public Class GuitarAmpEffect
                 fadeInCounter += 1
             End If
 
-            ' 3. COMPRESSORE (Soft-Knee Peak Compressor)
-            If snapComp Then
-                Dim threshAbsolute = 1.0F - CompThreshold
-                If threshAbsolute < 0.01F Then threshAbsolute = 0.01F
-                Dim diff = Math.Abs(sample) - threshAbsolute
+            ' === DYNAMIC SIGNAL CHAIN ===
+            For q As Integer = 0 To 6
+                Select Case snapChain(q)
+                    Case FXType.Compressor
+                        ' 3. COMPRESSORE (Soft-Knee Peak Compressor)
+                        If snapComp Then
+                            Dim threshAbsolute = 1.0F - CompThreshold
+                            If threshAbsolute < 0.01F Then threshAbsolute = 0.01F
+                            Dim diff = Math.Abs(sample) - threshAbsolute
 
-                If diff > 0 Then
-                    Dim targetG = 1.0F - (diff * (1.0F - (1.0F / CompRatio)))
-                    compEnvelope += compAttackCoeff * (targetG - compEnvelope)
-                Else
-                    compEnvelope += compReleaseCoeff * (1.0F - compEnvelope)
-                End If
-                If compEnvelope > 1.0F Then compEnvelope = 1.0F
+                            If diff > 0 Then
+                                Dim targetG = 1.0F - (diff * (1.0F - (1.0F / CompRatio)))
+                                compEnvelope += compAttackCoeff * (targetG - compEnvelope)
+                            Else
+                                compEnvelope += compReleaseCoeff * (1.0F - compEnvelope)
+                            End If
+                            If compEnvelope > 1.0F Then compEnvelope = 1.0F
 
-                sample *= compEnvelope
-                sample *= 1.0F + (CompThreshold * 0.5F)
-            End If
+                            sample *= compEnvelope
+                            sample *= 1.0F + (CompThreshold * 0.5F)
+                        End If
 
-            ' 4. ASYMMETRIC TUBE DRIVE con 2x Oversampling
-            If snapDrive > 0 Then
-                sample *= (1.0F + (snapDrive * 6.0F))
-                Dim tubeBias As Single = 0.25F * (snapDrive / 10.0F)
+                    Case FXType.Drive
+                        ' 4. ASYMMETRIC TUBE DRIVE con 2x Oversampling
+                        If snapDrive > 0 Then
+                            sample *= (1.0F + (snapDrive * 6.0F))
+                            Dim tubeBias As Single = 0.25F * (snapDrive / 10.0F)
 
-                Dim up1 = oversampleUpF2.Transform(oversampleUpF1.Transform(sample * 2.0F))
-                Dim up2 = oversampleUpF2.Transform(oversampleUpF1.Transform(0.0F))
+                            Dim up1 = oversampleUpF2.Transform(oversampleUpF1.Transform(sample * 2.0F))
+                            Dim up2 = oversampleUpF2.Transform(oversampleUpF1.Transform(0.0F))
 
-                Dim sat1 = CSng(Math.Tanh(up1 + tubeBias)) - CSng(Math.Tanh(tubeBias))
-                Dim sat2 = CSng(Math.Tanh(up2 + tubeBias)) - CSng(Math.Tanh(tubeBias))
+                            Dim sat1 = CSng(Math.Tanh(up1 + tubeBias)) - CSng(Math.Tanh(tubeBias))
+                            Dim sat2 = CSng(Math.Tanh(up2 + tubeBias)) - CSng(Math.Tanh(tubeBias))
 
-                Dim d1 = oversampleDownF2.Transform(oversampleDownF1.Transform(sat1))
-                oversampleDownF2.Transform(oversampleDownF1.Transform(sat2))
-                sample = d1
+                            Dim d1 = oversampleDownF2.Transform(oversampleDownF1.Transform(sat1))
+                            oversampleDownF2.Transform(oversampleDownF1.Transform(sat2))
+                            sample = d1
 
-                sample *= 0.6F + (0.4F / (1.0F + snapDrive * 0.3F))
-            End If
+                            sample *= 0.6F + (0.4F / (1.0F + snapDrive * 0.3F))
+                        End If
 
-            ' 5. EQ & CAB SIM + Denormal flush dopo i filtri
-            If myFilters IsNot Nothing Then
-                For Each f In myFilters : sample = f.Transform(sample) : Next
-            End If
-            sample = FlushDenormal(sample)
+                    Case FXType.AmpCab
+                        ' 5. EQ & CAB SIM + Denormal flush dopo i filtri
+                        If myFilters IsNot Nothing Then
+                            For Each f In myFilters : sample = f.Transform(sample) : Next
+                        End If
+                        sample = FlushDenormal(sample)
 
-            If snapCabSim AndAlso cabSimFilter1 IsNot Nothing Then
-                sample = cabSimHPF.Transform(sample)
-                sample = cabResonance.Transform(sample)
-                sample = cabSimFilter1.Transform(sample)
-                sample = cabSimFilter2.Transform(sample)
-                sample = cabPresenceDip.Transform(sample)
-                sample = cabRolloff.Transform(sample)
-                sample = FlushDenormal(sample)
-            End If
+                        If snapCabSim AndAlso cabSimFilter1 IsNot Nothing Then
+                            sample = cabSimHPF.Transform(sample)
+                            sample = cabResonance.Transform(sample)
+                            sample = cabSimFilter1.Transform(sample)
+                            sample = cabSimFilter2.Transform(sample)
+                            sample = cabPresenceDip.Transform(sample)
+                            sample = cabRolloff.Transform(sample)
+                            sample = FlushDenormal(sample)
+                        End If
 
-            ' 6. CHORUS (Interpolazione Cubica Hermite)
-            If snapChorus Then
-                Dim lfoHz = ChorusRate
-                Dim depthSamples = (ChorusDepth * 0.006F) * rate
-                Dim baseDelaySamples = 0.012F * rate
+                    Case FXType.Chorus
+                        ' 6. CHORUS (Interpolazione Cubica Hermite)
+                        If snapChorus Then
+                            Dim lfoHz = ChorusRate
+                            Dim depthSamples = (ChorusDepth * 0.006F) * rate
+                            Dim baseDelaySamples = 0.012F * rate
 
-                chorusPhase += CSng((Math.PI * 2 * lfoHz) / rate)
-                If chorusPhase > CSng(Math.PI * 2) Then chorusPhase -= CSng(Math.PI * 2)
+                            chorusPhase += CSng((Math.PI * 2 * lfoHz) / rate)
+                            If chorusPhase > CSng(Math.PI * 2) Then chorusPhase -= CSng(Math.PI * 2)
 
-                Dim currentDelay = baseDelaySamples + (CSng(Math.Sin(chorusPhase)) * depthSamples)
-                Dim readPosDelay = chorusPos - currentDelay
-                If readPosDelay < 0 Then readPosDelay += maxDelaySamples
+                            Dim currentDelay = baseDelaySamples + (CSng(Math.Sin(chorusPhase)) * depthSamples)
+                            Dim readPosDelay = chorusPos - currentDelay
+                            If readPosDelay < 0 Then readPosDelay += maxDelaySamples
 
-                Dim idx = CInt(Math.Floor(readPosDelay))
-                Dim frac As Single = readPosDelay - idx
-                Dim s0 = chorusBuffer((idx - 1 + maxDelaySamples) Mod maxDelaySamples)
-                Dim s1 = chorusBuffer(idx Mod maxDelaySamples)
-                Dim s2 = chorusBuffer((idx + 1) Mod maxDelaySamples)
-                Dim s3 = chorusBuffer((idx + 2) Mod maxDelaySamples)
+                            Dim idx = CInt(Math.Floor(readPosDelay))
+                            Dim frac As Single = readPosDelay - idx
+                            Dim s0 = chorusBuffer((idx - 1 + maxDelaySamples) Mod maxDelaySamples)
+                            Dim s1 = chorusBuffer(idx Mod maxDelaySamples)
+                            Dim s2 = chorusBuffer((idx + 1) Mod maxDelaySamples)
+                            Dim s3 = chorusBuffer((idx + 2) Mod maxDelaySamples)
 
-                Dim c0 = s1
-                Dim c1 = 0.5F * (s2 - s0)
-                Dim c2 = s0 - 2.5F * s1 + 2.0F * s2 - 0.5F * s3
-                Dim c3 = 0.5F * (s3 - s0) + 1.5F * (s1 - s2)
-                Dim chorusDelaySample = ((c3 * frac + c2) * frac + c1) * frac + c0
+                            Dim c0 = s1
+                            Dim c1 = 0.5F * (s2 - s0)
+                            Dim c2 = s0 - 2.5F * s1 + 2.0F * s2 - 0.5F * s3
+                            Dim c3 = 0.5F * (s3 - s0) + 1.5F * (s1 - s2)
+                            Dim chorusDelaySample = ((c3 * frac + c2) * frac + c1) * frac + c0
 
-                sample = (sample * (1.0F - (ChorusDepth * 0.5F))) + (chorusDelaySample * ChorusDepth)
-            End If
+                            sample = (sample * (1.0F - (ChorusDepth * 0.5F))) + (chorusDelaySample * ChorusDepth)
+                        End If
 
-            chorusBuffer(chorusPos) = sample
-            chorusPos = (chorusPos + 1) Mod maxDelaySamples
+                        chorusBuffer(chorusPos) = sample
+                        chorusPos = (chorusPos + 1) Mod maxDelaySamples
 
-            ' 7. TREMOLO
-            If snapTremolo Then
-                Dim modFactor = 1.0F - (TremoloDepth * (0.5F + (0.5F * CSng(Math.Sin(tremoloPhase)))))
-                sample *= modFactor
-                tremoloPhase += CSng((Math.PI * 2 * TremoloRate) / rate)
-                If tremoloPhase > Math.PI * 2 Then tremoloPhase -= CSng(Math.PI * 2)
-            End If
+                    Case FXType.Tremolo
+                        ' 7. TREMOLO
+                        If snapTremolo Then
+                            Dim modFactor = 1.0F - (TremoloDepth * (0.5F + (0.5F * CSng(Math.Sin(tremoloPhase)))))
+                            sample *= modFactor
+                            tremoloPhase += CSng((Math.PI * 2 * TremoloRate) / rate)
+                            If tremoloPhase > Math.PI * 2 Then tremoloPhase -= CSng(Math.PI * 2)
+                        End If
 
-            ' 8. TAPE DELAY (feedback corretto)
-            If snapDelay Then
-                Dim tMs = DelayTimeMs
-                If tMs < 10 Then tMs = 10
-                Dim readPos = delayPos - CInt((tMs / 1000.0F) * rate)
-                If readPos < 0 Then readPos += maxDelaySamples
+                    Case FXType.Delay
+                        ' 8. TAPE DELAY (feedback corretto)
+                        If snapDelay Then
+                            Dim tMs = DelayTimeMs
+                            If tMs < 10 Then tMs = 10
+                            Dim readPos = delayPos - CInt((tMs / 1000.0F) * rate)
+                            If readPos < 0 Then readPos += maxDelaySamples
 
-                Dim echo = delayBuffer(readPos)
-                tapeFilterSample += tapeLPFAlpha * (echo - tapeFilterSample)
-                Dim drySampleBeforeDelay = sample
-                sample += tapeFilterSample * DelayMix
-                delayBuffer(delayPos) = drySampleBeforeDelay + (tapeFilterSample * DelayFeedback)
-            Else
-                delayBuffer(delayPos) = sample
-            End If
-            delayPos = (delayPos + 1) Mod maxDelaySamples
+                            Dim echo = delayBuffer(readPos)
+                            tapeFilterSample += tapeLPFAlpha * (echo - tapeFilterSample)
+                            Dim drySampleBeforeDelay = sample
+                            sample += tapeFilterSample * DelayMix
+                            delayBuffer(delayPos) = drySampleBeforeDelay + (tapeFilterSample * DelayFeedback)
+                        Else
+                            delayBuffer(delayPos) = sample
+                        End If
+                        delayPos = (delayPos + 1) Mod maxDelaySamples
 
-            ' 9. REVERB (feedback corretto — scrive segnale pre-reverb)
-            Dim drySampleBeforeReverb = sample
-            If snapReverb Then
-                Dim r1 = reverbBuffer((reverbPos - CInt(rate * 0.0137F) + maxDelaySamples) Mod maxDelaySamples)
-                Dim r2 = reverbBuffer((reverbPos - CInt(rate * 0.0227F) + maxDelaySamples) Mod maxDelaySamples)
-                Dim r3 = reverbBuffer((reverbPos - CInt(rate * 0.0371F) + maxDelaySamples) Mod maxDelaySamples)
-                Dim r4 = reverbBuffer((reverbPos - CInt(rate * 0.0413F) + maxDelaySamples) Mod maxDelaySamples)
-                Dim r5 = reverbBuffer((reverbPos - CInt(rate * 0.0533F) + maxDelaySamples) Mod maxDelaySamples)
-                Dim r6 = reverbBuffer((reverbPos - CInt(rate * 0.0671F) + maxDelaySamples) Mod maxDelaySamples)
-                Dim r7 = reverbBuffer((reverbPos - CInt(rate * 0.0787F) + maxDelaySamples) Mod maxDelaySamples)
-                Dim r8 = reverbBuffer((reverbPos - CInt(rate * 0.0897F) + maxDelaySamples) Mod maxDelaySamples)
+                    Case FXType.Reverb
+                        ' 9. REVERB
+                        Dim drySampleBeforeReverb = sample
+                        If snapReverb Then
+                            Dim r1 = reverbBuffer((reverbPos - CInt(rate * 0.0137F) + maxDelaySamples) Mod maxDelaySamples)
+                            Dim r2 = reverbBuffer((reverbPos - CInt(rate * 0.0227F) + maxDelaySamples) Mod maxDelaySamples)
+                            Dim r3 = reverbBuffer((reverbPos - CInt(rate * 0.0371F) + maxDelaySamples) Mod maxDelaySamples)
+                            Dim r4 = reverbBuffer((reverbPos - CInt(rate * 0.0413F) + maxDelaySamples) Mod maxDelaySamples)
+                            Dim r5 = reverbBuffer((reverbPos - CInt(rate * 0.0533F) + maxDelaySamples) Mod maxDelaySamples)
+                            Dim r6 = reverbBuffer((reverbPos - CInt(rate * 0.0671F) + maxDelaySamples) Mod maxDelaySamples)
+                            Dim r7 = reverbBuffer((reverbPos - CInt(rate * 0.0787F) + maxDelaySamples) Mod maxDelaySamples)
+                            Dim r8 = reverbBuffer((reverbPos - CInt(rate * 0.0897F) + maxDelaySamples) Mod maxDelaySamples)
 
-                Dim earlyRef = (r1 + r2 + r3 + r4) * 0.25F
-                Dim lateRef = (r5 + r6 + r7 + r8) * 0.15F
-                Dim revSignal = earlyRef + lateRef
+                            Dim earlyRef = (r1 + r2 + r3 + r4) * 0.25F
+                            Dim lateRef = (r5 + r6 + r7 + r8) * 0.15F
+                            Dim revSignal = earlyRef + lateRef
 
-                sample += revSignal * ReverbMix
+                            sample += revSignal * ReverbMix
 
-                Dim dampAlpha As Single = CSng(1.0 - Math.Exp(-2.0 * Math.PI * 4000.0 / rate))
-                reverbDampSample += dampAlpha * (drySampleBeforeReverb - reverbDampSample)
-                reverbBuffer(reverbPos) = reverbDampSample * ReverbDecay
-            Else
-                reverbBuffer(reverbPos) = sample * 0.5F
-            End If
-            reverbPos = (reverbPos + 1) Mod maxDelaySamples
+                            Dim dampAlpha As Single = CSng(1.0 - Math.Exp(-2.0 * Math.PI * 4000.0 / rate))
+                            reverbDampSample += dampAlpha * (drySampleBeforeReverb - reverbDampSample)
+                            reverbBuffer(reverbPos) = reverbDampSample * ReverbDecay
+                        Else
+                            reverbBuffer(reverbPos) = sample * 0.5F
+                        End If
+                        reverbPos = (reverbPos + 1) Mod maxDelaySamples
+
+                End Select
+            Next
 
             ' MASTER
             sample *= snapVolume
-
-            ' OUTPUT ANTI-ALIAS FILTER + denormal flush
-            If outputAAFilter IsNot Nothing Then
-                sample = outputAAFilter.Transform(sample)
-            End If
-            sample = FlushDenormal(sample)
 
             ' MASTER LIMITER (Soft-Knee)
             Dim absOut = Math.Abs(sample)
@@ -409,6 +516,35 @@ Public Class GuitarAmpEffect
                 Dim compressed = 0.9F + CSng(Math.Tanh(excess * 5.0F)) * 0.1F
                 sample = Math.Sign(sample) * compressed
             End If
+
+MixExternal:
+            ' --- LOOPER (Post-Limiter, Independent) ---
+            Dim snapLooperState = LooperState
+            Dim looperOut As Single = 0.0F
+
+            If snapLooperState = LooperStates.Recording Then
+                If currentLooperPos < MAX_LOOPER_SAMPLES Then
+                    looperBuffer(currentLooperPos) = sample
+                    currentLooperPos += 1
+                Else
+                    looperLength = currentLooperPos
+                    currentLooperPos = 0
+                    LooperState = LooperStates.Playing
+                End If
+            ElseIf snapLooperState = LooperStates.Playing Then
+                If looperLength > 0 AndAlso currentLooperPos < looperLength Then
+                    looperOut = looperBuffer(currentLooperPos) * LooperVolume
+                    currentLooperPos += 1
+                    If currentLooperPos >= looperLength Then
+                        currentLooperPos = 0
+                    End If
+                End If
+            End If
+
+            sample += looperOut
+
+            ' --- MIX METRONOMO (100% Indipendente dal DSP Chitarra e dal Limiter) ---
+            sample += metroSample
 
             ' Safety Anti-NaN / Anti-Infinity + Denormal Flush finale
             If Single.IsNaN(sample) OrElse Single.IsInfinity(sample) Then sample = 0.0F

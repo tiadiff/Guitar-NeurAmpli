@@ -37,8 +37,13 @@
 <img width="2816" height="1536" alt="Gemini_Generated_Image_hmv2qmhmv2qmhmv2" src="https://github.com/user-attachments/assets/f4bb6e06-c606-4968-a1be-91518401446f" /><br><br>
 
 - **💾 Thread-Safe WAV Recording:** A dedicated button allows for surgical high-resolution recording (wet loop) by asynchronously dumping massive buffer *chunks* in the background. It utilizes strict `SyncLock` synchronization to guarantee thread-safe stability without audio dropouts or memory leaks.
-  
-- **🎨 Fluid UI:** Integrated fast-presets, a responsive floating-point hardware-style VUMeter, and smooth borderless dragging governed directly by Windows Native calls (WM_NCLBUTTONDOWN). <br><br>
+- **⛓️ Drag & Drop Signal Chain:** Reorder your pedals on the fly. The engine dynamically rewrites the audio processing loop to accommodate any configuration (e.g., Delay before or after Drive).
+
+- **🎵 Integrated Backing Track Player:** Jam along with your favorite tracks. Supports real-time hardware resampling to 192kHz to maintain the highest audio fidelity while mixing external files into the exclusive audio stream.
+
+- **🗃️ Studio Rack UI:** Automatic form positioning logic that "docks" the Looper, Metronome, Tuner, and Backing Track around the main amplifier, ensuring perfect visibility on 1080p monitors.
+
+- **🎨 Fluid UI:** Integrated fast-presets, a responsive hardware-style VUMeter with peak-hold, and real-time Noise Gate status via a dedicated LED indicator.
 
 ## 🚀 Quick Start / Usage
 1. Select the hardware input receiving your guitar from the dropdown menu.

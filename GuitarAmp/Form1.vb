@@ -9,7 +9,7 @@ Public Class Form1
     Private audioInput As WaveInEvent
     Private audioOutput As WasapiOut
     Private bufferedProvider As BufferedWaveProvider
-    Private guitarEffect As GuitarAmpEffect
+    Public guitarEffect As GuitarAmpEffect
     Private currentPeakLevel As Single = 0.0F
     Private peakHoldLevel As Single = 0.0F
     Private peakHoldFrames As Integer = 0
@@ -17,8 +17,36 @@ Public Class Form1
     Private isUpdatingPreset As Boolean = False
     Private recSeconds As Integer = 0
 
+    ' --- MIXER ---
+    Public masterMixer As SampleProviders.MixingSampleProvider
+
     ' --- FX TWEAKER ---
     Private currentSelectedFX As String = ""
+
+    ' --- METRONOME ---
+    Public isMetronomeON As Boolean = False
+    Public MetronomeBpm As Single = 120.0F
+    Public MetronomeVol As Single = 50.0F
+    Private metronomeForm As MetronomeForm
+
+    ' --- LOOPER ---
+    Public LooperVol As Single = 100.0F
+    Private looperForm As LooperForm
+
+    ' --- SIGNAL CHAIN ---
+    Private chainForm As ChainForm
+    Public globalSignalChain() As GuitarAmpEffect.FXType = {
+        GuitarAmpEffect.FXType.Compressor,
+        GuitarAmpEffect.FXType.Drive,
+        GuitarAmpEffect.FXType.AmpCab,
+        GuitarAmpEffect.FXType.Chorus,
+        GuitarAmpEffect.FXType.Tremolo,
+        GuitarAmpEffect.FXType.Delay,
+        GuitarAmpEffect.FXType.Reverb
+    }
+
+    ' --- BACKING TRACK ---
+    Private backTrackForm As BackTrackForm
 
     ' --- FX STATE VARIABLES (Source of Truth) ---
     Private fxChorusRate As Single = 1.0F
@@ -70,6 +98,14 @@ Public Class Form1
         Next
         If cmbInput.Items.Count > 0 Then cmbInput.SelectedIndex = 0
         LoadPresetClean()
+
+        ' Forza il riposizionamento dell'intero "rack" verso sinistra per far stare il Tuner a 1080p
+        ' Larghezza totale rack ~1740. StartX per centrare ~90px.
+        Me.StartPosition = FormStartPosition.Manual
+        Dim screenArea = Screen.PrimaryScreen.WorkingArea
+        Dim rackStartX = (screenArea.Width - 1740) \ 2 ' Circa 90px su monitor 1080p
+        ' Alziamo la Y (togliendo l'offset positivo) per non toccare la taskbar in basso
+        Me.Location = New Point(rackStartX + 276 + 8, (screenArea.Height - Me.Height) \ 2 - 20)
     End Sub
 
     Private Sub FX_SelectClicked(sender As Object, e As EventArgs)
@@ -242,11 +278,16 @@ Public Class Form1
             guitarEffect = New GuitarAmpEffect(bufferedProvider.ToSampleProvider())
             ApplySettings()
 
+            ' --- BACKING TRACK MIXER (MASTER BUS) ---
+            masterMixer = New SampleProviders.MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(192000, 1))
+            masterMixer.ReadFully = True
+            masterMixer.AddMixerInput(guitarEffect)
+
             ' Scelta tra WASAPI Esclusivo (latenza 10ms) e Condiviso (15ms, permette audio app)
             Dim shareMode = If(swExclusive.Checked, AudioClientShareMode.Exclusive, AudioClientShareMode.Shared)
             Dim latencyMode = If(swExclusive.Checked, 10, 15)
             audioOutput = New WasapiOut(shareMode, latencyMode)
-            audioOutput.Init(guitarEffect)
+            audioOutput.Init(masterMixer)
             audioInput.StartRecording()
             audioOutput.Play()
 
@@ -259,7 +300,8 @@ Public Class Form1
     Private Sub btnStop_Click(sender As Object, e As EventArgs) Handles btnStop.Click
         audioInput?.StopRecording() : audioOutput?.Stop()
         audioInput?.Dispose() : audioOutput?.Dispose()
-        audioInput = Nothing : audioOutput = Nothing : guitarEffect = Nothing
+        audioInput = Nothing : audioOutput = Nothing
+	    guitarEffect = Nothing : masterMixer = Nothing
         btnStart.Enabled = True : btnStop.Enabled = False
         picVuMeter.Invalidate()
     End Sub
@@ -320,8 +362,22 @@ Public Class Form1
         guitarEffect.ReverbDecay = fxReverbDecay
         guitarEffect.CompThreshold = fxCompThreshold
         guitarEffect.CompRatio = fxCompRatio
+        
+        ' Metronome
+        guitarEffect.MetronomeEnabled = isMetronomeON
+        guitarEffect.MetronomeBPM = MetronomeBpm
+        guitarEffect.MetronomeVolume = MetronomeVol / 100.0F
+
+        ' Looper (vol 100 = 2.5x multiplier to avoid masking)
+        guitarEffect.LooperVolume = (LooperVol / 100.0F) * 2.5F
+
+        guitarEffect.SignalChain = CType(globalSignalChain.Clone(), GuitarAmpEffect.FXType())
 
         guitarEffect.UpdateFilters()
+    End Sub
+
+    Public Sub ApplySettingsPublic()
+        ApplySettings()
     End Sub
 
     ' Collega gli eventi dei nuovi controlli custom
@@ -542,6 +598,13 @@ Public Class Form1
                 End If
             End If
             
+            ' Noise Gate visual LED
+            If guitarEffect.GateActive AndAlso guitarEffect.EnableGate Then
+                picGateLED.BackColor = Color.FromArgb(200, 40, 40)
+            Else
+                picGateLED.BackColor = Color.FromArgb(20, 20, 24)
+            End If
+
             picVuMeter.Invalidate()
         End If
     End Sub
@@ -605,6 +668,90 @@ Public Class Form1
         Me.Close()
     End Sub
 
+    ' --- TUNER ---
+    Private tunerForm As TunerForm
+
+    Private Sub btnTuner_Click(sender As Object, e As EventArgs) Handles btnTuner.Click
+        If tunerForm IsNot Nothing AndAlso Not tunerForm.IsDisposed Then
+            tunerForm.StartPosition = FormStartPosition.Manual
+            tunerForm.Location = New Point(Me.Right + 4, Me.Top - 204)
+            tunerForm.BringToFront()
+            Return
+        End If
+        tunerForm = New TunerForm(cmbInput.SelectedIndex)
+        tunerForm.StartPosition = FormStartPosition.Manual
+        tunerForm.Location = New Point(Me.Right + 4, Me.Top - 204)
+        tunerForm.Show(Me)
+    End Sub
+
+    Private Sub btnMetronome_Click(sender As Object, e As EventArgs) Handles btnMetronome.Click
+        If metronomeForm Is Nothing OrElse metronomeForm.IsDisposed Then
+            metronomeForm = New MetronomeForm()
+        End If
+        metronomeForm.StartPosition = FormStartPosition.Manual
+        ' Posizionato sotto il Looper (335px + gap)
+        metronomeForm.Location = New Point(Me.Left - metronomeForm.Width - 4, Me.Top + 135)
+        metronomeForm.Visible = False
+        metronomeForm.Show(Me)
+    End Sub
+
+    Private Sub btnLooper_Click(sender As Object, e As EventArgs) Handles btnLooper.Click
+        If looperForm Is Nothing OrElse looperForm.IsDisposed Then
+            looperForm = New LooperForm()
+        End If
+        looperForm.StartPosition = FormStartPosition.Manual
+        looperForm.Location = New Point(Me.Left - looperForm.Width - 4, Me.Top - 204)
+        looperForm.Visible = False
+        looperForm.Show(Me)
+    End Sub
+
+    Private Sub btnChain_Click(sender As Object, e As EventArgs) Handles btnChain.Click
+        If chainForm Is Nothing OrElse chainForm.IsDisposed Then
+            chainForm = New ChainForm()
+        End If
+        chainForm.StartPosition = FormStartPosition.Manual
+        chainForm.Location = New Point(Me.Left, Me.Top - chainForm.Height - 4)
+        chainForm.Visible = False
+        chainForm.Show(Me)
+    End Sub
+
+    Private Sub btnBacking_Click(sender As Object, e As EventArgs) Handles btnBacking.Click
+        If backTrackForm Is Nothing OrElse backTrackForm.IsDisposed Then
+            backTrackForm = New BackTrackForm()
+        End If
+        backTrackForm.StartPosition = FormStartPosition.Manual
+        backTrackForm.Location = New Point(Me.Left, Me.Bottom + 4)
+        backTrackForm.Visible = False
+        backTrackForm.Show(Me)
+    End Sub
+
+    Public Sub ToggleLooperState()
+        If guitarEffect Is Nothing Then Return
+        
+        Dim s = guitarEffect.LooperState
+        If s = GuitarAmpEffect.LooperStates.Stopped Then
+            guitarEffect.LooperState = GuitarAmpEffect.LooperStates.Recording
+            guitarEffect.currentLooperPos = 0
+            guitarEffect.looperLength = 0
+        ElseIf s = GuitarAmpEffect.LooperStates.Recording Then
+            guitarEffect.looperLength = guitarEffect.currentLooperPos
+            guitarEffect.currentLooperPos = 0
+            guitarEffect.LooperState = GuitarAmpEffect.LooperStates.Playing
+        ElseIf s = GuitarAmpEffect.LooperStates.Playing Then
+            guitarEffect.LooperState = GuitarAmpEffect.LooperStates.Stopped
+            ' Manteniamo la lunghezza e la posizione = 0, così al prossimo play riparte
+            guitarEffect.currentLooperPos = 0
+        End If
+    End Sub
+
+    Protected Overrides Function ProcessCmdKey(ByRef msg As Message, keyData As Keys) As Boolean
+        If keyData = Keys.Space Then
+            ToggleLooperState()
+            Return True ' handled
+        End If
+        Return MyBase.ProcessCmdKey(msg, keyData)
+    End Function
+
     Private Sub Form1_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing
         btnStop.PerformClick()
     End Sub
@@ -626,5 +773,9 @@ Public Class Form1
             Dim ts As TimeSpan = TimeSpan.FromSeconds(recSeconds)
             Label3.Text = "REC: " & ts.ToString("mm\:ss")
         End If
+    End Sub
+
+    Private Sub pnlMain_Paint(sender As Object, e As PaintEventArgs) Handles pnlMain.Paint
+
     End Sub
 End Class

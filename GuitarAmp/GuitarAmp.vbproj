@@ -68,6 +68,12 @@
   <PropertyGroup>
     <ApplicationIcon>NeurAmpli.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup>
+    <TargetZone>LocalIntranet</TargetZone>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateManifests>false</GenerateManifests>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Win32.Registry, Version=4.1.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Win32.Registry.4.7.0\lib\net461\Microsoft.Win32.Registry.dll</HintPath>
@@ -131,7 +137,39 @@
       <DependentUpon>Form1.vb</DependentUpon>
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="MetronomeForm.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MetronomeForm.Designer.vb">
+      <DependentUpon>MetronomeForm.vb</DependentUpon>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="BackTrackForm.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="BackTrackForm.Designer.vb">
+      <DependentUpon>BackTrackForm.vb</DependentUpon>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LooperForm.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LooperForm.Designer.vb">
+      <DependentUpon>LooperForm.vb</DependentUpon>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ChainForm.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ChainForm.Designer.vb">
+      <DependentUpon>ChainForm.vb</DependentUpon>
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="GuitarAmpEffect.vb" />
+    <Compile Include="TunerEngine.vb" />
+    <Compile Include="TunerForm.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="ModernControls.vb">
       <SubType>Component</SubType>
     </Compile>
