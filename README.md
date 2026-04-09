@@ -12,9 +12,9 @@
 
 - **⚡ Dynamic WASAPI Engine (Exclusive/Shared):** A dedicated UI toggle allows you to seamlessly switch between **Exclusive Mode** (completely bypassing the Windows native mixer for microscopic 10ms output buffers and maximum real-time responsiveness) and **Shared Mode** (perfect for practicing over YouTube backing tracks or Spotify with ~15ms latency). The stream gracefully auto-restarts upon switching without breaking the UI.
   
-- **📈 192kHz Implicit Oversampling:** Internal DSP engine tested to run natively at `192,000Hz`. Operating at this extreme frequency not only offers crystalline precision but naturally prevents catastrophic digital aliasing ("fizz") when generating extreme high-gain distortion. <br><br>
+- **📈 192kHz Implicit Oversampling:** Internal DSP engine tested to run natively at `192,000Hz`. Operating at this extreme frequency not only offers crystalline precision but naturally prevents catastrophic digital aliasing ("fizz") when generating extreme high-gain distortion.
 
-- **🔥 Asymmetric Tube Simulation with 2x Oversampling:** The distortion (Drive) stage doesn't rely on artificial symmetric clipping. A **Parametric DC Tube Bias offset** is applied within the `Math.Tanh` transfer function. It's now heavily upgraded with **internal 2x Oversampling** (anti-imaging and anti-aliasing filters) to perfectly emulate the color and warmth of true thermionic vacuum tubes without generating high-frequency digital "fizz" artifacts. <br><br>
+- **🔥 Asymmetric Tube Simulation with 2x Oversampling:** The distortion (Drive) stage doesn't rely on artificial symmetric clipping. A **Parametric DC Tube Bias offset** is applied within the `Math.Tanh` transfer function. It's now heavily upgraded with **internal 2x Oversampling** (anti-imaging and anti-aliasing filters) to perfectly emulate the color and warmth of true thermionic vacuum tubes without generating high-frequency digital "fizz" artifacts.
   
 - **🔊 6-Stage Advanced Cabinet Simulator:** Instead of a basic low-pass filter, the Cab Sim algorithm mimics the acoustic mass and air movement of a large 4x12 Studio Cabinet using cascaded `BiQuadFilter` instances:
   - **75Hz HPF:** Removes subsonic "boom" for a tight low-end.
@@ -53,7 +53,8 @@
 ## 🛠️ Built With
 - **Visual Studio / VB.NET**
 - **NAudio API** (`WasapiOut`, `WaveInEvent`, DSP `BiQuadFilter`, `BufferedWaveProvider`)
-- **Win32 API Integrations** (User32.dll) for borderless window dragging events. <br><br>
+- **Win32 API Integrations** (User32.dll) for borderless window dragging events. 
 
 ## 📝 License
-MIT License - Open Source Educational/Musical Project. Feel free to use these DSP functions as a foundation to build more complex VSTs or standalone pedalboards.
+MIT License - Open Source Educational/Musical Project.
+Feel free to use these DSP functions as a foundation to build more complex VSTs or standalone pedalboards.
