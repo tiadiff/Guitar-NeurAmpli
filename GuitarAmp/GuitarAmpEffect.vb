@@ -18,11 +18,18 @@ Public Class GuitarAmpEffect
     Private cabPresenceDip As BiQuadFilter
     Private cabRolloff As BiQuadFilter
 
-    ' --- 2x OVERSAMPLING PER DRIVE (4 stadi separati per 24dB/oct) ---
-    Private oversampleUpF1 As BiQuadFilter     ' Anti-imaging stage 1
-    Private oversampleUpF2 As BiQuadFilter     ' Anti-imaging stage 2
+    ' --- 2x OVERSAMPLING PER DRIVE (filtri separati per ogni sub-sample) ---
+    Private oversampleUpF1_A As BiQuadFilter   ' Anti-imaging stage 1, sub-sample A
+    Private oversampleUpF2_A As BiQuadFilter   ' Anti-imaging stage 2, sub-sample A
+    Private oversampleUpF1_B As BiQuadFilter   ' Anti-imaging stage 1, sub-sample B (zero-stuffed)
+    Private oversampleUpF2_B As BiQuadFilter   ' Anti-imaging stage 2, sub-sample B (zero-stuffed)
     Private oversampleDownF1 As BiQuadFilter   ' Anti-aliasing stage 1
     Private oversampleDownF2 As BiQuadFilter   ' Anti-aliasing stage 2
+
+    ' --- PRE-DRIVE LOW-SHELF (attenua bass prima della distorsione senza tagliare le fondamentali) ---
+    Private preDriveLowShelf As BiQuadFilter
+    ' --- POST-DRIVE PRESENCE (ripristina articolazione dopo la saturazione) ---
+    Private postDrivePresence As BiQuadFilter
 
     ' --- OUTPUT ANTI-ALIAS ---
     Private outputAAFilter As BiQuadFilter
@@ -216,11 +223,22 @@ Public Class GuitarAmpEffect
         cabPresenceDip = BiQuadFilter.PeakingEQ(rate, 3500.0F, 1.5F, -2.5F) ' Cono (da -4→-2.5dB)
         cabRolloff = BiQuadFilter.LowPassFilter(rate, 6000.0F, 0.5F)        ' Rolloff (da 5500→6000Hz)
 
-        ' === 2x OVERSAMPLING FILTERS (4 stadi separati per 24dB/oct) ===
+        ' === PRE-DRIVE FILTERS ===
+        ' Low-shelf a 200Hz con -4dB: ATTENUA (non taglia) le basse prima della saturazione.
+        ' Riduce l'intermodulazione nei power chord ma preserva le fondamentali delle note aperte
+        ' (E2=82Hz, A2=110Hz non vengono eliminate, solo attenuate di ~4dB)
+        preDriveLowShelf = BiQuadFilter.LowShelf(rate, 200.0F, 0.707F, -4.0F)
+        ' Post-drive presence: ripristina l'attacco e l'articolazione persi dalla tanh()
+        postDrivePresence = BiQuadFilter.PeakingEQ(rate, 2500.0F, 1.2F, 2.0F)
+
+        ' === 2x OVERSAMPLING FILTERS (filtri separati per sub-sample A e B) ===
+        ' CRITICO: ogni sub-sample deve avere i propri filtri per non corrompere lo stato z1/z2
         Dim osCutoff = rate * 0.45F
         Dim osRate = rate * 2.0F
-        oversampleUpF1 = BiQuadFilter.LowPassFilter(osRate, osCutoff, 0.707F)
-        oversampleUpF2 = BiQuadFilter.LowPassFilter(osRate, osCutoff, 0.707F)
+        oversampleUpF1_A = BiQuadFilter.LowPassFilter(osRate, osCutoff, 0.707F)
+        oversampleUpF2_A = BiQuadFilter.LowPassFilter(osRate, osCutoff, 0.707F)
+        oversampleUpF1_B = BiQuadFilter.LowPassFilter(osRate, osCutoff, 0.707F)
+        oversampleUpF2_B = BiQuadFilter.LowPassFilter(osRate, osCutoff, 0.707F)
         oversampleDownF1 = BiQuadFilter.LowPassFilter(osRate, osCutoff, 0.707F)
         oversampleDownF2 = BiQuadFilter.LowPassFilter(osRate, osCutoff, 0.707F)
 
@@ -382,21 +400,40 @@ Public Class GuitarAmpEffect
 
                     Case FXType.Drive
                         ' 4. ASYMMETRIC TUBE DRIVE con 2x Oversampling
+                        ' Reworked: gain curve compressa, filtri separati, HPF pre-drive
                         If snapDrive > 0 Then
-                            sample *= (1.0F + (snapDrive * 6.0F))
-                            Dim tubeBias As Single = 0.25F * (snapDrive / 10.0F)
+                            ' PRE-DRIVE LOW-SHELF: attenua bass per ridurre IMD, preserva fondamentali
+                            If preDriveLowShelf IsNot Nothing Then
+                                sample = preDriveLowShelf.Transform(sample)
+                            End If
 
-                            Dim up1 = oversampleUpF2.Transform(oversampleUpF1.Transform(sample * 2.0F))
-                            Dim up2 = oversampleUpF2.Transform(oversampleUpF1.Transform(0.0F))
+                            ' Gain curve compressa: drive 1→x4, drive 5→x9, drive 10→x14
+                            ' (prima era lineare: drive 10 = x61, troppo per tanh)
+                            Dim driveGain = 1.0F + (snapDrive * 1.3F)
+                            sample *= driveGain
+                            Dim tubeBias As Single = 0.15F * (snapDrive / 10.0F)
 
+                            ' 2x Oversampling con filtri SEPARATI per sub-sample A (segnale) e B (zero)
+                            ' Questo previene la corruzione di stato z1/z2 che causava aliasing
+                            Dim up1 = oversampleUpF2_A.Transform(oversampleUpF1_A.Transform(sample * 2.0F))
+                            Dim up2 = oversampleUpF2_B.Transform(oversampleUpF1_B.Transform(0.0F))
+
+                            ' Saturazione asimmetrica con bias ridotto
                             Dim sat1 = CSng(Math.Tanh(up1 + tubeBias)) - CSng(Math.Tanh(tubeBias))
                             Dim sat2 = CSng(Math.Tanh(up2 + tubeBias)) - CSng(Math.Tanh(tubeBias))
 
+                            ' Decimazione: entrambi i campioni passano per i filtri down
                             Dim d1 = oversampleDownF2.Transform(oversampleDownF1.Transform(sat1))
                             oversampleDownF2.Transform(oversampleDownF1.Transform(sat2))
                             sample = d1
 
-                            sample *= 0.6F + (0.4F / (1.0F + snapDrive * 0.3F))
+                            ' Makeup gain compensato
+                            sample *= 0.7F + (0.3F / (1.0F + snapDrive * 0.2F))
+
+                            ' Post-drive presence: ripristina definizione delle note
+                            If postDrivePresence IsNot Nothing Then
+                                sample = postDrivePresence.Transform(sample)
+                            End If
                         End If
 
                     Case FXType.AmpCab

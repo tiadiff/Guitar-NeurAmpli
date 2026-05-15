@@ -5,7 +5,6 @@ Octaver / Pitch Shift — aggiunge un tono un'ottava sotto/sopra per un suono pi
 
 🎨 UI / UX
 Analizzatore di spettro (FFT visualizer) — al posto o in aggiunta del VU meter, mostra le frequenze in real-time. Super visivo.
-Drag & Drop della catena effetti — permettere all'utente di riordinare gli effetti nella signal chain.
 Preset naming — dare un nome personalizzato ai preset utente (invece di solo USR 1/2/3).
 Più slot user preset — passare da 3 a 8-10 slot, o un sistema import/export preset.
 

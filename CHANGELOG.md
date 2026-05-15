@@ -1,5 +1,3 @@
-# Changelog
-
 ## [2.9.8] - 2026-04-09
 ### Added
 - **Backing Track Player**: A dedicated form to load and play MP3/WAV/AIFF files. Includes real-time 192kHz hardware resampling (MediaFoundation) and mono downmixing to integrate perfectly with the DSP engine.
